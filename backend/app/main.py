@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.config import settings
 from app.database import engine
-from app.routers import auth
-from app.routers import auth, vehicles
-from app.routers import auth, vehicles, bookings, admin
+from app.routers import auth, vehicles, bookings, admin, favorites
+
 app = FastAPI(title="Vehicle Platform API")
 app.include_router(auth.router)
 app.include_router(vehicles.router)
 app.include_router(bookings.router)
 app.include_router(admin.router)
+app.include_router(favorites.router)
 
 app.add_middleware(
     CORSMiddleware,
