@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Vehicles from "./pages/Vehicles";
 import VehicleDetail from "./pages/VehicleDetail";
 import MyBookings from "./pages/MyBookings";
+import MyFavorites from "./pages/MyFavorites";
 import AdminDashboard from "./pages/AdminDashboard";
 
 function Nav() {
@@ -16,6 +17,7 @@ function Nav() {
       {isAuthenticated ? (
         <>
           <Link to="/bookings">My Bookings</Link>
+          <Link to="/favorites">My Favorites</Link>
           {isAdmin && <Link to="/admin">Admin</Link>}
           <button onClick={logout}>Logout</button>
         </>
@@ -39,6 +41,7 @@ export default function App() {
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetail />} />
           <Route path="/bookings" element={<MyBookings />} />
+          <Route path="/favorites" element={<MyFavorites />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
