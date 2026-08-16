@@ -4,6 +4,8 @@ import { useAuth } from "./context/useAuth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Vehicles from "./pages/Vehicles";
+import VehicleDetail from "./pages/VehicleDetail";
+import MyBookings from "./pages/MyBookings";
 
 function Nav() {
   const { isAuthenticated, logout } = useAuth();
@@ -11,7 +13,10 @@ function Nav() {
     <nav style={{ padding: 16, borderBottom: "1px solid #ddd", display: "flex", gap: 16 }}>
       <Link to="/vehicles">Vehicles</Link>
       {isAuthenticated ? (
-        <button onClick={logout}>Logout</button>
+        <>
+          <Link to="/bookings">My Bookings</Link>
+          <button onClick={logout}>Logout</button>
+        </>
       ) : (
         <>
           <Link to="/login">Login</Link>
@@ -30,6 +35,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Vehicles />} />
           <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/vehicles/:id" element={<VehicleDetail />} />
+          <Route path="/bookings" element={<MyBookings />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
