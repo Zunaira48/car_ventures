@@ -5,6 +5,9 @@ from app.database import get_db
 from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.booking import Booking
+from app.schemas.user import UserOut
+from app.schemas.vehicle import VehicleOut
+from app.schemas.booking import BookingOut
 from app.auth.dependencies import require_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -30,15 +33,15 @@ def dashboard_summary(db: Session = Depends(get_db), current_user: User = Depend
         "note": "revenue_estimate is a sum of recorded booking prices, not actual collected payments (no real payment processing is implemented)",
     }
 
-@router.get("/vehicles/pending")
+@router.get("/vehicles/pending", response_model=list[VehicleOut])
 def pending_vehicles(db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     vehicles = db.query(Vehicle).filter(Vehicle.status == "PENDING").order_by(Vehicle.created_at.desc()).all()
     return vehicles
 
-@router.get("/bookings")
+@router.get("/bookings", response_model=list[BookingOut])
 def all_bookings(db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     return db.query(Booking).order_by(Booking.created_at.desc()).all()
 
-@router.get("/users")
+@router.get("/users", response_model=list[UserOut])
 def all_users(db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     return db.query(User).order_by(User.created_at.desc()).all()
