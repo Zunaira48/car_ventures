@@ -1,0 +1,88 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.vehicle import Vehicle
+from app.models.user import User
+from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut
+from app.auth.dependencies import get_current_user, require_admin
+
+router = APIRouter(prefix="/vehicles", tags=["vehicles"])
+
+@router.get("", response_model=list[VehicleOut])
+def list_vehicles(
+    db: Session = Depends(get_db),
+    location: str | None = None,
+    category: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    transmission: str | None = None,
+    fuel_type: str | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    query = db.query(Vehicle).filter(Vehicle.status == "APPROVED")
+
+    if location:
+        query = query.filter(Vehicle.location.ilike(f"%{location}%"))
+    if category:
+        query = query.filter(Vehicle.category == category)
+    if transmission:
+        query = query.filter(Vehicle.transmission == transmission)
+    if fuel_type:
+        query = query.filter(Vehicle.fuel_type == fuel_type)
+    if min_price is not None:
+        query = query.filter(Vehicle.rental_price >= min_price)
+    if max_price is not None:
+        query = query.filter(Vehicle.rental_price <= max_price)
+
+    offset = (page - 1) * page_size
+    return query.order_by(Vehicle.created_at.desc()).offset(offset).limit(page_size).all()
+
+@router.get("/{vehicle_id}", response_model=VehicleOut)
+def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+    return vehicle
+
+@router.post("", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
+def create_vehicle(
+    payload: VehicleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    vehicle = Vehicle(**payload.model_dump(), owner_id=current_user.id, status="PENDING")
+    db.add(vehicle)
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+@router.put("/{vehicle_id}", response_model=VehicleOut)
+def update_vehicle(
+    vehicle_id: int,
+    payload: VehicleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(vehicle, field, value)
+
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_vehicle(
+    vehicle_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+    db.delete(vehicle)
+    db.commit()
