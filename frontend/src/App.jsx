@@ -6,15 +6,17 @@ import Register from "./pages/Register";
 import Vehicles from "./pages/Vehicles";
 import VehicleDetail from "./pages/VehicleDetail";
 import MyBookings from "./pages/MyBookings";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Nav() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   return (
     <nav style={{ padding: 16, borderBottom: "1px solid #ddd", display: "flex", gap: 16 }}>
       <Link to="/vehicles">Vehicles</Link>
       {isAuthenticated ? (
         <>
           <Link to="/bookings">My Bookings</Link>
+          {isAdmin && <Link to="/admin">Admin</Link>}
           <button onClick={logout}>Logout</button>
         </>
       ) : (
@@ -37,6 +39,7 @@ export default function App() {
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetail />} />
           <Route path="/bookings" element={<MyBookings />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
