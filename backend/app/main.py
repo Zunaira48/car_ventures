@@ -5,10 +5,12 @@ from app.config import settings
 from app.database import engine
 from app.routers import auth
 from app.routers import auth, vehicles
+from app.routers import auth, vehicles, bookings
 
 app = FastAPI(title="Vehicle Platform API")
 app.include_router(auth.router)
 app.include_router(vehicles.router)
+app.include_router(bookings.router)
 
 app.add_middleware(
     CORSMiddleware,
