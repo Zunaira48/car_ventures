@@ -3,6 +3,110 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/useAuth";
 
+function ReviewsSection({ vehicleId }) {
+  const { isAuthenticated, user } = useAuth();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const load = () => {
+    api.get(`/vehicles/${vehicleId}/reviews`)
+      .then((res) => setData(res.data))
+      .catch(() => setError("Could not load reviews."));
+  };
+
+  useEffect(load, [vehicleId]);
+
+  const myReview = data?.reviews.find((r) => r.user_id === user?.id);
+
+  useEffect(() => {
+    if (myReview) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRating(myReview.rating);
+      setComment(myReview.comment || "");
+    }
+  }, [myReview]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    setSubmitting(true);
+    try {
+      if (myReview) {
+        await api.put(`/reviews/${vehicleId}`, { rating, comment });
+      } else {
+        await api.post("/reviews", { vehicle_id: Number(vehicleId), rating, comment });
+      }
+      load();
+    } catch (err) {
+      setFormError(err.response?.data?.detail || "Could not save your review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const remove = async () => {
+    setSubmitting(true);
+    try {
+      await api.delete(`/reviews/${vehicleId}`);
+      setComment("");
+      setRating(5);
+      load();
+    } catch {
+      setFormError("Could not delete your review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (!data) return <p>Loading reviews...</p>;
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <h3>Reviews {data.count > 0 && `(${data.average_rating} ★ · ${data.count})`}</h3>
+
+      {data.reviews.length === 0 ? (
+        <p>No reviews yet.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+          {data.reviews.map((r) => (
+            <div key={r.id} style={{ border: "1px solid #eee", borderRadius: 6, padding: 10 }}>
+              <p><strong>{r.reviewer_name}</strong> — {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</p>
+              {r.comment && <p>{r.comment}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isAuthenticated ? (
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 360 }}>
+          <label>
+            Your rating
+            <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+              {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} star{n > 1 ? "s" : ""}</option>)}
+            </select>
+          </label>
+          <label>
+            Comment
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} />
+          </label>
+          {formError && <p style={{ color: "red" }}>{formError}</p>}
+          <div>
+            <button type="submit" disabled={submitting}>{myReview ? "Update review" : "Submit review"}</button>{" "}
+            {myReview && <button type="button" onClick={remove} disabled={submitting}>Delete review</button>}
+          </div>
+        </form>
+      ) : (
+        <p>Log in to leave a review.</p>
+      )}
+    </div>
+  );
+}
+
 export default function VehicleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -129,6 +233,8 @@ export default function VehicleDetail() {
           </button>
         </form>
       )}
+
+      <ReviewsSection vehicleId={id} />
     </div>
   );
 }
