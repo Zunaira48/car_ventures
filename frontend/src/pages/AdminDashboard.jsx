@@ -79,6 +79,67 @@ function PendingVehiclesTab() {
   );
 }
 
+function AllVehiclesTab() {
+  const [vehicles, setVehicles] = useState([]);
+  const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState(null);
+
+  const load = () => {
+    api.get("/admin/vehicles")
+      .then((res) => setVehicles(res.data))
+      .catch(() => setError("Could not load vehicles."));
+  };
+
+  useEffect(load, []);
+
+  const setVehicleStatus = async (id, status) => {
+    setSavingId(id);
+    try {
+      await api.put(`/vehicles/${id}`, { status });
+      setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, status } : v)));
+    } catch {
+      setError("Could not update that vehicle's status. Please try again.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (vehicles.length === 0) return <p>No vehicles yet.</p>;
+
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+          <th>ID</th><th>Title</th><th>Location</th><th>Status</th><th>Change Availability</th>
+        </tr>
+      </thead>
+      <tbody>
+        {vehicles.map((v) => (
+          <tr key={v.id} style={{ borderBottom: "1px solid #eee" }}>
+            <td>{v.id}</td>
+            <td>{v.title}</td>
+            <td>{v.location}</td>
+            <td>{v.status}</td>
+            <td>
+              <select
+                value={v.status}
+                disabled={savingId === v.id}
+                onChange={(e) => setVehicleStatus(v.id, e.target.value)}
+              >
+                <option value="PENDING">PENDING</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="REJECTED">REJECTED</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+              </select>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function BookingsTab() {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState("");
@@ -178,11 +239,84 @@ function UsersTab() {
   );
 }
 
+function ManageToursTab() {
+  const [tours, setTours] = useState([]);
+  const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState(null);
+
+  const load = () => {
+  api.get("/admin/tours")
+    .then((res) => setTours(res.data))
+    .catch(() => setError("Could not load tours."));
+};
+
+  useEffect(load, []);
+
+  const toggleStatus = async (t) => {
+    const newStatus = t.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setBusyId(t.id);
+    try {
+      await api.put(`/tours/${t.id}`, { status: newStatus });
+      setTours((prev) => prev.map((x) => (x.id === t.id ? { ...x, status: newStatus } : x)));
+    } catch {
+      setError("Could not update that tour's status. Please try again.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Delete this tour? This cannot be undone.")) return;
+    setBusyId(id);
+    try {
+      await api.delete(`/tours/${id}`);
+      setTours((prev) => prev.filter((t) => t.id !== id));
+    } catch {
+      setError("Could not delete that tour. It may have existing bookings.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (tours.length === 0) return <p>No tours yet.</p>;
+
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+          <th>ID</th><th>Type</th><th>Title</th><th>Destination</th><th>Price</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tours.map((t) => (
+          <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
+            <td>{t.id}</td>
+            <td>{t.tour_type === "GROUP_BUS" ? "Group Bus" : "Private Car"}</td>
+            <td>{t.title}</td>
+            <td>{t.destination}</td>
+            <td>PKR {t.price}</td>
+            <td>{t.status}</td>
+            <td>
+              <button onClick={() => toggleStatus(t)} disabled={busyId === t.id}>
+                {t.status === "ACTIVE" ? "Deactivate" : "Activate"}
+              </button>{" "}
+              <button onClick={() => remove(t.id)} disabled={busyId === t.id}>Delete</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 const TABS = [
   { key: "summary", label: "Summary", Component: SummaryTab },
   { key: "pending", label: "Pending Vehicles", Component: PendingVehiclesTab },
+  { key: "allVehicles", label: "All Vehicles", Component: AllVehiclesTab },
   { key: "bookings", label: "All Bookings", Component: BookingsTab },
   { key: "users", label: "All Users", Component: UsersTab },
+  { key: "tours", label: "Manage Tours", Component: ManageToursTab },
 ];
 
 export default function AdminDashboard() {
