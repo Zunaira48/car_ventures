@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database import get_db
 from app.models.vehicle import Vehicle
 from app.models.user import User
+from app.models.review import Review
 from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut
+from app.schemas.review import ReviewOut, VehicleReviewsOut
 from app.auth.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
@@ -44,6 +47,29 @@ def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     if not vehicle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
     return vehicle
+
+@router.get("/{vehicle_id}/reviews", response_model=VehicleReviewsOut)
+def get_vehicle_reviews(vehicle_id: int, db: Session = Depends(get_db)):
+    rows = (
+        db.query(Review, User.full_name)
+        .join(User, User.id == Review.user_id)
+        .filter(Review.vehicle_id == vehicle_id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+    reviews = [
+        ReviewOut(
+            id=r.id, vehicle_id=r.vehicle_id, user_id=r.user_id,
+            reviewer_name=name, rating=r.rating, comment=r.comment, created_at=r.created_at,
+        )
+        for r, name in rows
+    ]
+    avg = db.query(func.avg(Review.rating)).filter(Review.vehicle_id == vehicle_id).scalar()
+    return VehicleReviewsOut(
+        average_rating=round(avg, 1) if avg is not None else None,
+        count=len(reviews),
+        reviews=reviews,
+    )
 
 @router.post("", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(
