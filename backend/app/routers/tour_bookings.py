@@ -8,6 +8,7 @@ from app.models.tour_booking import TourBooking
 from app.models.user import User
 from app.schemas.tour import TourBookingCreate, TourBookingOut, TourBookingStatusUpdate
 from app.auth.dependencies import get_current_user, require_admin
+from app.services.notifications import notify
 
 router = APIRouter(prefix="/tour-bookings", tags=["tour-bookings"])
 
@@ -88,6 +89,8 @@ def create_tour_booking(payload: TourBookingCreate, db: Session = Depends(get_db
     db.add(booking)
     db.commit()
     db.refresh(booking)
+    notify(db, current_user.id, f"Your booking request for {tour.title} has been submitted and is pending approval.", "/tour-bookings")
+    db.commit()
     return booking
 
 
@@ -108,6 +111,8 @@ def cancel_tour_booking(booking_id: int, db: Session = Depends(get_db), current_
     booking.status = "CANCELLED"
     db.commit()
     db.refresh(booking)
+    notify(db, booking.user_id, "Your tour booking has been cancelled.", "/tour-bookings")
+    db.commit()
     return booking
 
 
@@ -124,4 +129,12 @@ def update_tour_booking_status(
     booking.status = payload.status
     db.commit()
     db.refresh(booking)
+    status_messages = {
+        "CONFIRMED": "Your tour booking has been confirmed.",
+        "CANCELLED": "Your tour booking has been cancelled by the admin.",
+        "COMPLETED": "Your tour has been marked as completed. We hope you enjoyed it!",
+    }
+    if payload.status in status_messages:
+        notify(db, booking.user_id, status_messages[payload.status], "/tour-bookings")
+        db.commit()
     return booking

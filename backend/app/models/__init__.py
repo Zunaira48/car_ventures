@@ -5,3 +5,4 @@ from app.models.favorite import Favorite
 from app.models.review import Review
 from app.models.tour import Tour
 from app.models.tour_booking import TourBooking
+from app.models.notification import Notification

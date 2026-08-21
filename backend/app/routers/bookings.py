@@ -7,6 +7,7 @@ from app.models.vehicle import Vehicle
 from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingOut, BookingStatusUpdate
 from app.auth.dependencies import get_current_user, require_admin
+from app.services.notifications import notify
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
@@ -66,6 +67,8 @@ def create_booking(
     db.add(booking)
     db.commit()
     db.refresh(booking)
+    notify(db, current_user.id, f"Your booking request for {vehicle.title} has been submitted and is pending approval.", "/bookings")
+    db.commit()
     return booking
 
 
@@ -96,6 +99,8 @@ def cancel_booking(booking_id: int, db: Session = Depends(get_db), current_user:
     booking.status = "CANCELLED"
     db.commit()
     db.refresh(booking)
+    notify(db, booking.user_id, "Your booking has been cancelled.", "/bookings")
+    db.commit()
     return booking
 
 
@@ -112,4 +117,12 @@ def update_booking_status(
     booking.status = payload.status
     db.commit()
     db.refresh(booking)
+    status_messages = {
+        "CONFIRMED": "Your booking has been confirmed.",
+        "CANCELLED": "Your booking has been cancelled by the admin.",
+        "COMPLETED": "Your booking has been marked as completed. Feel free to leave a review!",
+    }
+    if payload.status in status_messages:
+        notify(db, booking.user_id, status_messages[payload.status], "/bookings")
+        db.commit()
     return booking
