@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Vehicles from "./pages/Vehicles";
 import VehicleDetail from "./pages/VehicleDetail";
+import AddVehicle from "./pages/AddVehicle";
 import MyBookings from "./pages/MyBookings";
 import MyFavorites from "./pages/MyFavorites";
 import Tours from "./pages/Tours";
@@ -35,6 +36,7 @@ function Nav() {
               </span>
             )}
           </Link>
+          {isAdmin && <Link to="/admin/add-vehicle">Add Vehicle</Link>}
           {isAdmin && <Link to="/admin">Admin</Link>}
           <button onClick={logout}>Logout</button>
         </>
@@ -57,6 +59,7 @@ export default function App() {
           <Route path="/" element={<Vehicles />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetail />} />
+          <Route path="/admin/add-vehicle" element={<AddVehicle />} />
           <Route path="/bookings" element={<MyBookings />} />
           <Route path="/favorites" element={<MyFavorites />} />
           <Route path="/tours" element={<Tours />} />
