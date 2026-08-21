@@ -10,12 +10,13 @@ import MyFavorites from "./pages/MyFavorites";
 import Tours from "./pages/Tours";
 import TourDetail from "./pages/TourDetail";
 import MyTourBookings from "./pages/MyTourBookings";
+import Notifications from "./pages/Notifications";
 import AdminDashboard from "./pages/AdminDashboard";
 
 function Nav() {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, unreadCount, logout } = useAuth();
   return (
-    <nav style={{ padding: 16, borderBottom: "1px solid #ddd", display: "flex", gap: 16, flexWrap: "wrap" }}>
+    <nav style={{ padding: 16, borderBottom: "1px solid #ddd", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
       <Link to="/vehicles">Vehicles</Link>
       <Link to="/tours">Tours</Link>
       {isAuthenticated ? (
@@ -23,6 +24,17 @@ function Nav() {
           <Link to="/bookings">My Bookings</Link>
           <Link to="/tour-bookings">My Tour Bookings</Link>
           <Link to="/favorites">My Favorites</Link>
+          <Link to="/notifications" style={{ position: "relative" }}>
+            Notifications
+            {unreadCount > 0 && (
+              <span style={{
+                position: "absolute", top: -8, right: -18, background: "red", color: "white",
+                borderRadius: "50%", fontSize: 11, padding: "1px 6px",
+              }}>
+                {unreadCount}
+              </span>
+            )}
+          </Link>
           {isAdmin && <Link to="/admin">Admin</Link>}
           <button onClick={logout}>Logout</button>
         </>
@@ -50,6 +62,7 @@ export default function App() {
           <Route path="/tours" element={<Tours />} />
           <Route path="/tours/:id" element={<TourDetail />} />
           <Route path="/tour-bookings" element={<MyTourBookings />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
