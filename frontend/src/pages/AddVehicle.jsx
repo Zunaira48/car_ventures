@@ -78,73 +78,88 @@ export default function AddVehicle() {
     }
   };
 
-  if (userLoading) return <p>Loading...</p>;
-  if (!isAuthenticated) return <p>Please log in to view this page.</p>;
-  if (!isAdmin) return <p>You don't have access to this page.</p>;
+  if (userLoading) return <div className="page-narrow"><p className="muted">Loading...</p></div>;
+  if (!isAuthenticated) return <div className="page-narrow"><p className="alert-error">Please log in to view this page.</p></div>;
+  if (!isAdmin) return <div className="page-narrow"><p className="alert-error">You don't have access to this page.</p></div>;
 
   if (submitSuccess) {
     return (
-      <div style={{ maxWidth: 500, margin: "40px auto" }}>
-        <p>Vehicle "{submitSuccess.title}" created with status {submitSuccess.status}.</p>
-        <button onClick={() => navigate("/admin")}>Go to Admin Dashboard</button>
+      <div className="page-narrow">
+        <div className="card">
+          <div className="card-body">
+            <p className="alert-success">
+              Vehicle "{submitSuccess.title}" created with status {submitSuccess.status}.
+            </p>
+            <button className="btn-primary" onClick={() => navigate("/admin")} style={{ marginTop: 12 }}>
+              Go to Admin Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 500, margin: "40px auto" }}>
-      <h2>Add Vehicle</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <label>Title <input value={form.title} onChange={update("title")} required /></label>
-        <label>Make <input value={form.make} onChange={update("make")} required /></label>
-        <label>Model <input value={form.model} onChange={update("model")} required /></label>
-        <label>Year <input type="number" value={form.year} onChange={update("year")} required /></label>
-        <label>
-          Category
-          <select value={form.category} onChange={update("category")}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </label>
-        <label>Body type <input value={form.body_type} onChange={update("body_type")} placeholder="e.g. Sedan, SUV" /></label>
-        <label>
-          Transmission
-          <select value={form.transmission} onChange={update("transmission")}>
-            <option value="Automatic">Automatic</option>
-            <option value="Manual">Manual</option>
-          </select>
-        </label>
-        <label>
-          Fuel type
-          <select value={form.fuel_type} onChange={update("fuel_type")}>
-            <option value="Petrol">Petrol</option>
-            <option value="Diesel">Diesel</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Electric">Electric</option>
-          </select>
-        </label>
-        <label>Engine <input value={form.engine} onChange={update("engine")} placeholder="e.g. 1.6L" /></label>
-        <label>Mileage (km) <input type="number" value={form.mileage} onChange={update("mileage")} /></label>
-        <label>Seats <input type="number" value={form.seats} onChange={update("seats")} /></label>
-        <label>Color <input value={form.color} onChange={update("color")} /></label>
-        <label>Location (city) <input value={form.location} onChange={update("location")} required /></label>
-        <label>Rental price / day (PKR) <input type="number" value={form.rental_price} onChange={update("rental_price")} /></label>
+    <div className="page-narrow">
+      <div className="card">
+        <div className="card-body">
+          <h2>Add Vehicle</h2>
+          <p className="muted" style={{ marginTop: -8, marginBottom: 20 }}>
+            Admin-only. New listings are created with PENDING status until approved.
+          </p>
+          <form onSubmit={handleSubmit} className="form">
+            <label>Title <input value={form.title} onChange={update("title")} required /></label>
+            <label>Make <input value={form.make} onChange={update("make")} required /></label>
+            <label>Model <input value={form.model} onChange={update("model")} required /></label>
+            <label>Year <input type="number" value={form.year} onChange={update("year")} required /></label>
+            <label>
+              Category
+              <select value={form.category} onChange={update("category")}>
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+            <label>Body type <input value={form.body_type} onChange={update("body_type")} placeholder="e.g. Sedan, SUV" /></label>
+            <label>
+              Transmission
+              <select value={form.transmission} onChange={update("transmission")}>
+                <option value="Automatic">Automatic</option>
+                <option value="Manual">Manual</option>
+              </select>
+            </label>
+            <label>
+              Fuel type
+              <select value={form.fuel_type} onChange={update("fuel_type")}>
+                <option value="Petrol">Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Electric">Electric</option>
+              </select>
+            </label>
+            <label>Engine <input value={form.engine} onChange={update("engine")} placeholder="e.g. 1.6L" /></label>
+            <label>Mileage (km) <input type="number" value={form.mileage} onChange={update("mileage")} /></label>
+            <label>Seats <input type="number" value={form.seats} onChange={update("seats")} /></label>
+            <label>Color <input value={form.color} onChange={update("color")} /></label>
+            <label>Location (city) <input value={form.location} onChange={update("location")} required /></label>
+            <label>Rental price / day (PKR) <input type="number" value={form.rental_price} onChange={update("rental_price")} /></label>
 
-        <div style={{ border: "1px solid #ddd", borderRadius: 8, padding: 10 }}>
-          <label>Sale price (PKR) <input type="number" value={form.sale_price} onChange={update("sale_price")} /></label>
-          <div style={{ marginTop: 8 }}>
-            <button type="button" onClick={handleEstimate} disabled={estimating}>
-              {estimating ? "Estimating..." : "Estimate Sale Price (AI)"}
+            <div className="ai-box">
+              <label>Sale price (PKR) <input type="number" value={form.sale_price} onChange={update("sale_price")} /></label>
+              <button type="button" className="btn-secondary btn-sm" onClick={handleEstimate} disabled={estimating} style={{ marginTop: 8 }}>
+                {estimating ? "Estimating..." : "✨ Estimate Sale Price (AI)"}
+              </button>
+              {estimateError && <p className="alert-error" style={{ marginTop: 8 }}>{estimateError}</p>}
+              {estimateNote && <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>{estimateNote}</p>}
+            </div>
+
+            <label>Description <textarea value={form.description} onChange={update("description")} rows={3} /></label>
+
+            {submitError && <p className="alert-error">{submitError}</p>}
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? "Creating..." : "Create Vehicle"}
             </button>
-          </div>
-          {estimateError && <p style={{ color: "red", fontSize: 13 }}>{estimateError}</p>}
-          {estimateNote && <p style={{ fontSize: 12, color: "#888" }}>{estimateNote}</p>}
+          </form>
         </div>
-
-        <label>Description <textarea value={form.description} onChange={update("description")} rows={3} /></label>
-
-        {submitError && <p style={{ color: "red" }}>{submitError}</p>}
-        <button type="submit" disabled={submitting}>{submitting ? "Creating..." : "Create Vehicle"}</button>
-      </form>
+      </div>
     </div>
   );
 }

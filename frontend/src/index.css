@@ -159,6 +159,8 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 input[type="checkbox"] { width: auto; }
 .form { display: flex; flex-direction: column; gap: 14px; }
+.ai-box { background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+
 
 /* ---------- Tabs (admin dashboard) ---------- */
 .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
