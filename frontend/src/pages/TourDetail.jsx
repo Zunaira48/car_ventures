@@ -68,35 +68,35 @@ export default function TourDetail() {
     }
   };
 
-  if (loading) return <p>Loading tour...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return <p className="page muted">Loading tour...</p>;
+  if (error) return <p className="page alert-error">{error}</p>;
   if (!tour) return null;
 
   return (
-    <div style={{ maxWidth: 700, margin: "40px auto" }}>
+    <div className="page-narrow">
       {tour.images?.[0] && (
         <img
           src={tour.images[0]}
           alt={tour.title}
-          style={{ width: "100%", height: 280, objectFit: "cover", borderRadius: 8 }}
+          style={{ width: "100%", height: 280, objectFit: "cover", borderRadius: 10, marginBottom: 16 }}
         />
       )}
-      <p style={{ fontSize: 13, color: "#888" }}>{isGroup ? "Group Bus Tour" : "Private Car + Guide"}</p>
+      <p className="card-tag">{isGroup ? "Group Bus Tour" : "Private Car + Guide"}</p>
       <h2>{tour.title}</h2>
-      <p>{tour.destination}{tour.duration_days ? ` · ${tour.duration_days} day${tour.duration_days > 1 ? "s" : ""}` : ""}</p>
-      <p><strong>PKR {tour.price}</strong> {isGroup ? "per person" : "per day"}</p>
+      <p className="muted">{tour.destination}{tour.duration_days ? ` · ${tour.duration_days} day${tour.duration_days > 1 ? "s" : ""}` : ""}</p>
+      <p className="card-price mono" style={{ fontSize: 20 }}>PKR {tour.price} <span className="unit">{isGroup ? "per person" : "per day"}</span></p>
       {tour.description && <p>{tour.description}</p>}
       {tour.included_facilities?.length > 0 && (
-        <p>Included: {tour.included_facilities.join(", ")}</p>
+        <p className="muted">Included: {tour.included_facilities.join(", ")}</p>
       )}
-      {isGroup && tour.max_group_size && <p>Group size: up to {tour.max_group_size} people</p>}
+      {isGroup && tour.max_group_size && <p className="muted">Group size: up to {tour.max_group_size} people</p>}
 
       <h3 style={{ marginTop: 32 }}>Book this tour</h3>
 
       {bookingSuccess ? (
-        <div style={{ padding: 12, background: "#eaffea", border: "1px solid #8c8", borderRadius: 6 }}>
-          <p>Booking created — status: {bookingSuccess.status}.</p>
-          <p>Total: PKR {bookingSuccess.total_price}</p>
+        <div className="alert-success">
+          <p style={{ margin: 0 }}>Booking created &mdash; status: <span className="status-pill status-pending">{bookingSuccess.status}</span></p>
+          {bookingSuccess.total_price && <p style={{ margin: "8px 0" }}>Total: PKR {bookingSuccess.total_price}</p>}
           <button onClick={() => navigate("/tour-bookings")}>View my tour bookings</button>
         </div>
       ) : (
@@ -125,7 +125,7 @@ export default function TourDetail() {
             </>
           )}
 
-          {bookingError && <p style={{ color: "red" }}>{bookingError}</p>}
+          {bookingError && <p className="alert-error">{bookingError}</p>}
 
           <button type="submit" disabled={submitting}>
             {submitting ? "Booking..." : isAuthenticated ? "Book now" : "Log in to book"}
