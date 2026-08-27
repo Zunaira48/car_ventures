@@ -5,6 +5,8 @@ from app.database import get_db
 from app.models.vehicle import Vehicle
 from app.models.user import User
 from app.models.review import Review
+from app.models.booking import Booking
+from app.models.favorite import Favorite
 from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut
 from app.schemas.review import ReviewOut, VehicleReviewsOut
 from app.auth.dependencies import get_current_user, require_admin
@@ -110,5 +112,16 @@ def delete_vehicle(
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+
+    booking_count = db.query(Booking).filter(Booking.vehicle_id == vehicle_id).count()
+    if booking_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete: this vehicle has {booking_count} booking(s) on record. "
+                   f"Set its status to SUSPENDED instead to hide it from listings without losing booking history.",
+        )
+
+    db.query(Favorite).filter(Favorite.vehicle_id == vehicle_id).delete()
+    db.query(Review).filter(Review.vehicle_id == vehicle_id).delete()
     db.delete(vehicle)
     db.commit()

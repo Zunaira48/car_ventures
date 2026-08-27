@@ -94,6 +94,7 @@ function AllVehiclesTab() {
 
   const setVehicleStatus = async (id, status) => {
     setSavingId(id);
+    setError("");
     try {
       await api.put(`/vehicles/${id}`, { status });
       setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, status } : v)));
@@ -104,42 +105,60 @@ function AllVehiclesTab() {
     }
   };
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (vehicles.length === 0) return <p>No vehicles yet.</p>;
+  const deleteVehicle = async (v) => {
+    if (!window.confirm(`Delete "${v.title}"? This cannot be undone.`)) return;
+    setSavingId(v.id);
+    setError("");
+    try {
+      await api.delete(`/vehicles/${v.id}`);
+      setVehicles((prev) => prev.filter((x) => x.id !== v.id));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Could not delete that vehicle.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  if (vehicles.length === 0 && !error) return <p>No vehicles yet.</p>;
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-          <th>ID</th><th>Title</th><th>Location</th><th>Status</th><th>Change Availability</th>
-        </tr>
-      </thead>
-      <tbody>
-        {vehicles.map((v) => (
-          <tr key={v.id} style={{ borderBottom: "1px solid #eee" }}>
-            <td>{v.id}</td>
-            <td>{v.title}</td>
-            <td>{v.location}</td>
-            <td>{v.status}</td>
-            <td>
-              <select
-                value={v.status}
-                disabled={savingId === v.id}
-                onChange={(e) => setVehicleStatus(v.id, e.target.value)}
-              >
-                <option value="PENDING">PENDING</option>
-                <option value="APPROVED">APPROVED</option>
-                <option value="REJECTED">REJECTED</option>
-                <option value="SUSPENDED">SUSPENDED</option>
-              </select>
-            </td>
+    <div>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+            <th>ID</th><th>Title</th><th>Location</th><th>Status</th><th>Change Availability</th><th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {vehicles.map((v) => (
+            <tr key={v.id} style={{ borderBottom: "1px solid #eee" }}>
+              <td>{v.id}</td>
+              <td>{v.title}</td>
+              <td>{v.location}</td>
+              <td>{v.status}</td>
+              <td>
+                <select
+                  value={v.status}
+                  disabled={savingId === v.id}
+                  onChange={(e) => setVehicleStatus(v.id, e.target.value)}
+                >
+                  <option value="PENDING">PENDING</option>
+                  <option value="APPROVED">APPROVED</option>
+                  <option value="REJECTED">REJECTED</option>
+                  <option value="SUSPENDED">SUSPENDED</option>
+                </select>
+              </td>
+              <td>
+                <button onClick={() => deleteVehicle(v)} disabled={savingId === v.id}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
-
 function BookingsTab() {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState("");
