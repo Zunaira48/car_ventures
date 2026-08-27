@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,15 +21,42 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "40px auto" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Login</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <p>No account? <Link to="/register">Register</Link></p>
+    <div className="page-narrow">
+      <div className="card">
+        <div className="card-body">
+          <h2>Login</h2>
+          <p className="muted" style={{ marginTop: -8, marginBottom: 20 }}>
+            Welcome back — enter your details to continue.
+          </p>
+          <form onSubmit={handleSubmit} className="form">
+            <label>
+              Email
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
+            {error && <p className="alert-error">{error}</p>}
+            <button type="submit" className="btn-primary">Login</button>
+          </form>
+          <p className="muted" style={{ marginTop: 16, marginBottom: 0 }}>
+            No account? <Link to="/register">Register</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

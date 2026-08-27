@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+
 export default function Register() {
   const [form, setForm] = useState({ full_name: "", email: "", password: "", city: "", phone_number: "" });
   const [error, setError] = useState("");
@@ -23,19 +24,43 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "40px auto" }}>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="full_name" placeholder="Full name" onChange={handleChange} required />
-        <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-        <input name="city" placeholder="City" onChange={handleChange} />
-        <input name="phone_number" placeholder="Phone number" onChange={handleChange} />
-        <button type="submit">Register</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>Registered! Redirecting to login...</p>}
-      <p>Already have an account? <Link to="/login">Login</Link></p>
+    <div className="page-narrow">
+      <div className="card">
+        <div className="card-body">
+          <h2>Register</h2>
+          <p className="muted" style={{ marginTop: -8, marginBottom: 20 }}>
+            Create an account to book vehicles and tours.
+          </p>
+          <form onSubmit={handleSubmit} className="form">
+            <label>
+              Full name
+              <input name="full_name" placeholder="Your name" onChange={handleChange} required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="you@example.com" onChange={handleChange} required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" placeholder="••••••••" onChange={handleChange} required />
+            </label>
+            <label>
+              City
+              <input name="city" placeholder="e.g. Lahore" onChange={handleChange} />
+            </label>
+            <label>
+              Phone number
+              <input name="phone_number" placeholder="+92 3XX XXXXXXX" onChange={handleChange} />
+            </label>
+            {error && <p className="alert-error">{error}</p>}
+            {success && <p className="alert-success">Registered! Redirecting to login...</p>}
+            <button type="submit" className="btn-primary">Register</button>
+          </form>
+          <p className="muted" style={{ marginTop: 16, marginBottom: 0 }}>
+            Already have an account? <Link to="/login">Login</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

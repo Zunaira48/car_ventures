@@ -8,12 +8,16 @@ export default function MyBookings() {
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
 
-  useEffect(() => {
+  const loadBookings = () => {
+    setLoading(true);
     api.get("/bookings/my")
       .then((res) => setBookings(res.data))
       .catch(() => setError("Could not load your bookings. Please try again."))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(loadBookings, []);
 
   const handleCancel = async (bookingId) => {
     setCancellingId(bookingId);
@@ -29,29 +33,35 @@ export default function MyBookings() {
     }
   };
 
-  if (loading) return <p>Loading your bookings...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return <p className="page muted">Loading your bookings...</p>;
+  if (error) return <p className="page alert-error">{error}</p>;
 
   return (
-    <div style={{ maxWidth: 700, margin: "40px auto" }}>
+    <div className="page">
       <h2>My Bookings</h2>
       {bookings.length === 0 ? (
-        <p>
+        <p className="muted">
           You have no bookings yet. <Link to="/vehicles">Browse vehicles</Link>.
         </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {bookings.map((b) => (
-            <div key={b.id} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
-              <p><strong>Booking #{b.id}</strong> — {b.status}</p>
-              <p>{b.start_date} to {b.end_date}</p>
-              {b.pickup_location && <p>Pickup: {b.pickup_location}</p>}
-              {b.total_price && <p>Total: PKR {b.total_price}</p>}
-              {(b.status === "PENDING" || b.status === "CONFIRMED") && (
-                <button onClick={() => handleCancel(b.id)} disabled={cancellingId === b.id}>
-                  {cancellingId === b.id ? "Cancelling..." : "Cancel booking"}
-                </button>
-              )}
+            <div key={b.id} className="ticket">
+              <div className="ticket-main">
+                <p className="label">Vehicle Booking &middot; #{b.id}</p>
+                <p className="title mono">{b.start_date} &rarr; {b.end_date}</p>
+                {b.pickup_location && <p className="meta">Pickup: {b.pickup_location}</p>}
+                {b.total_price && <p className="meta mono">PKR {b.total_price}</p>}
+              </div>
+              <div className="ticket-divider" />
+              <div className="ticket-stub">
+                <span className={`status-pill status-${b.status.toLowerCase()}`}>{b.status}</span>
+                {(b.status === "PENDING" || b.status === "CONFIRMED") && (
+                  <button className="btn-danger btn-sm" onClick={() => handleCancel(b.id)} disabled={cancellingId === b.id}>
+                    {cancellingId === b.id ? "Cancelling..." : "Cancel"}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

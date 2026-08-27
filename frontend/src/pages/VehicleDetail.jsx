@@ -62,28 +62,31 @@ function ReviewsSection({ vehicleId }) {
     }
   };
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!data) return <p>Loading reviews...</p>;
+  if (error) return <p className="alert-error">{error}</p>;
+  if (!data) return <p className="muted">Loading reviews...</p>;
 
   return (
     <div style={{ marginTop: 32 }}>
-      <h3>Reviews {data.count > 0 && `(${data.average_rating} ★ · ${data.count})`}</h3>
+      <h3>Reviews {data.count > 0 && `(${data.average_rating} \u2605 \u00b7 ${data.count})`}</h3>
 
       {data.reviews.length === 0 ? (
-        <p>No reviews yet.</p>
+        <p className="muted">No reviews yet.</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+        <div style={{ marginBottom: 20 }}>
           {data.reviews.map((r) => (
-            <div key={r.id} style={{ border: "1px solid #eee", borderRadius: 6, padding: 10 }}>
-              <p><strong>{r.reviewer_name}</strong> — {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</p>
-              {r.comment && <p>{r.comment}</p>}
+            <div key={r.id} className="review-item">
+              <p style={{ margin: 0 }}>
+                <strong>{r.reviewer_name}</strong>{" "}
+                <span className="stars">{"\u2605".repeat(r.rating)}{"\u2606".repeat(5 - r.rating)}</span>
+              </p>
+              {r.comment && <p className="muted" style={{ margin: "4px 0 0" }}>{r.comment}</p>}
             </div>
           ))}
         </div>
       )}
 
       {isAuthenticated ? (
-        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 360 }}>
+        <form onSubmit={submit} className="page-narrow" style={{ padding: 0, display: "flex", flexDirection: "column", gap: 10, maxWidth: 360 }}>
           <label>
             Your rating
             <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
@@ -94,14 +97,14 @@ function ReviewsSection({ vehicleId }) {
             Comment
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} />
           </label>
-          {formError && <p style={{ color: "red" }}>{formError}</p>}
-          <div>
-            <button type="submit" disabled={submitting}>{myReview ? "Update review" : "Submit review"}</button>{" "}
-            {myReview && <button type="button" onClick={remove} disabled={submitting}>Delete review</button>}
+          {formError && <p className="alert-error">{formError}</p>}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="submit" disabled={submitting}>{myReview ? "Update review" : "Submit review"}</button>
+            {myReview && <button type="button" className="btn-danger" onClick={remove} disabled={submitting}>Delete review</button>}
           </div>
         </form>
       ) : (
-        <p>Log in to leave a review.</p>
+        <p className="muted">Log in to leave a review.</p>
       )}
     </div>
   );
@@ -173,30 +176,31 @@ export default function VehicleDetail() {
     }
   };
 
-  if (loading) return <p>Loading vehicle...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return <p className="page muted">Loading vehicle...</p>;
+  if (error) return <p className="page alert-error">{error}</p>;
   if (!vehicle) return null;
 
   return (
-    <div style={{ maxWidth: 700, margin: "40px auto" }}>
+    <div className="page-narrow">
       {vehicle.images?.[0] && (
         <img
           src={vehicle.images[0]}
           alt={vehicle.title}
-          style={{ width: "100%", height: 280, objectFit: "cover", borderRadius: 8 }}
+          style={{ width: "100%", height: 280, objectFit: "cover", borderRadius: 10, marginBottom: 16 }}
         />
       )}
+      <p className="card-tag">{vehicle.category}</p>
       <h2>{vehicle.title}</h2>
-      <p>{vehicle.location} · {vehicle.transmission} · {vehicle.fuel_type} · {vehicle.year}</p>
-      {vehicle.rental_price && <p><strong>PKR {vehicle.rental_price}/day</strong></p>}
+      <p className="muted">{vehicle.location} &middot; {vehicle.transmission} &middot; {vehicle.fuel_type} &middot; {vehicle.year}</p>
+      {vehicle.rental_price && <p className="card-price mono" style={{ fontSize: 20 }}>PKR {vehicle.rental_price} <span className="unit">/day</span></p>}
       {vehicle.description && <p>{vehicle.description}</p>}
 
       <h3 style={{ marginTop: 32 }}>Book this vehicle</h3>
 
       {bookingSuccess ? (
-        <div style={{ padding: 12, background: "#eaffea", border: "1px solid #8c8", borderRadius: 6 }}>
-          <p>Booking created — status: {bookingSuccess.status}.</p>
-          {bookingSuccess.total_price && <p>Total: PKR {bookingSuccess.total_price}</p>}
+        <div className="alert-success">
+          <p style={{ margin: 0 }}>Booking created &mdash; status: <span className="status-pill status-pending">{bookingSuccess.status}</span></p>
+          {bookingSuccess.total_price && <p style={{ margin: "8px 0" }}>Total: PKR {bookingSuccess.total_price}</p>}
           <button onClick={() => navigate("/bookings")}>View my bookings</button>
         </div>
       ) : (
@@ -217,16 +221,16 @@ export default function VehicleDetail() {
             Dropoff location
             <input type="text" value={dropoffLocation} onChange={(e) => setDropoffLocation(e.target.value)} />
           </label>
-          <label>
+          <label style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <input
               type="checkbox"
               checked={withChauffeur === "yes"}
               onChange={(e) => setWithChauffeur(e.target.checked ? "yes" : "no")}
             />
-            {" "}With chauffeur
+            With chauffeur
           </label>
 
-          {bookingError && <p style={{ color: "red" }}>{bookingError}</p>}
+          {bookingError && <p className="alert-error">{bookingError}</p>}
 
           <button type="submit" disabled={submitting}>
             {submitting ? "Booking..." : isAuthenticated ? "Book now" : "Log in to book"}

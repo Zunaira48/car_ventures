@@ -11,7 +11,7 @@ export default function Vehicles() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api.get("/vehicles")
+    api.get("/vehicles?page_size=100")
       .then((res) => setVehicles(res.data))
       .catch(() => setError("Could not load vehicles. Please try again."))
       .finally(() => setLoading(false));
@@ -25,7 +25,7 @@ export default function Vehicles() {
     }
     api.get("/favorites")
       .then((res) => setFavoriteIds(new Set(res.data.map((v) => v.id))))
-      .catch(() => {}); // non-critical - hearts just won't be pre-filled
+      .catch(() => {});
   }, [isAuthenticated]);
 
   const toggleFavorite = async (e, vehicleId) => {
@@ -40,13 +40,9 @@ export default function Vehicles() {
       return next;
     });
     try {
-      if (isFavorited) {
-        await api.delete(`/favorites/${vehicleId}`);
-      } else {
-        await api.post(`/favorites/${vehicleId}`);
-      }
+      if (isFavorited) await api.delete(`/favorites/${vehicleId}`);
+      else await api.post(`/favorites/${vehicleId}`);
     } catch {
-      // revert on failure
       setFavoriteIds((prev) => {
         const next = new Set(prev);
         isFavorited ? next.add(vehicleId) : next.delete(vehicleId);
@@ -55,36 +51,38 @@ export default function Vehicles() {
     }
   };
 
-  if (loading) return <p>Loading vehicles...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (vehicles.length === 0) return <p>No vehicles available yet.</p>;
-
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto" }}>
-      <h2>Available Vehicles</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16 }}>
+    <div className="page">
+      <div className="section-head">
+        <h2>Available Vehicles</h2>
+        {!loading && <span className="muted">{vehicles.length} result{vehicles.length !== 1 ? "s" : ""}</span>}
+      </div>
+
+      {loading && <p className="muted">Loading vehicles...</p>}
+      {error && <p className="alert-error">{error}</p>}
+      {!loading && !error && vehicles.length === 0 && <p className="muted">No vehicles available yet.</p>}
+
+      <div className="grid">
         {vehicles.map((v) => (
-          <Link
-            key={v.id}
-            to={`/vehicles/${v.id}`}
-            style={{ position: "relative", border: "1px solid #ddd", borderRadius: 8, padding: 12, color: "inherit", textDecoration: "none" }}
-          >
+          <Link key={v.id} to={`/vehicles/${v.id}`} className="card">
+            <div className="card-photo">
+              {v.images?.[0] && <img src={v.images[0]} alt={v.title} />}
+            </div>
             {isAuthenticated && (
-              <button
-                onClick={(e) => toggleFavorite(e, v.id)}
-                aria-label={favoriteIds.has(v.id) ? "Remove from favorites" : "Add to favorites"}
-                style={{
-                  position: "absolute", top: 8, right: 8, border: "none", background: "rgba(255,255,255,0.85)",
-                  borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16,
-                }}
-              >
-                {favoriteIds.has(v.id) ? "❤️" : "🤍"}
+              <button className="favorite-btn" onClick={(e) => toggleFavorite(e, v.id)}>
+                {favoriteIds.has(v.id) ? "\u2764\ufe0f" : "\ud83e\udd0d"}
               </button>
             )}
-            {v.images?.[0] && <img src={v.images[0]} alt={v.title} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 6 }} />}
-            <h3>{v.title}</h3>
-            <p>{v.location} · {v.transmission} · {v.fuel_type}</p>
-            {v.rental_price && <p><strong>PKR {v.rental_price}/day</strong></p>}
+            <div className="card-body">
+              <p className="card-tag">{v.category || v.transmission}</p>
+              <h3>{v.title}</h3>
+              <p className="card-spec">{v.location} &middot; {v.transmission} &middot; {v.fuel_type}</p>
+              <div className="card-foot">
+                {v.rental_price && (
+                  <span className="card-price mono">PKR {v.rental_price} <span className="unit">/day</span></span>
+                )}
+              </div>
+            </div>
           </Link>
         ))}
       </div>
