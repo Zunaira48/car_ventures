@@ -12,27 +12,27 @@ function SummaryTab() {
       .catch(() => setError("Could not load dashboard summary."));
   }, []);
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!summary) return <p>Loading...</p>;
+  if (error) return <p className="alert-error">{error}</p>;
+  if (!summary) return <p className="muted">Loading...</p>;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
+    <div className="stats-grid">
       <Stat label="Total Users" value={summary.total_users} />
       <Stat label="Total Vehicles" value={summary.total_vehicles} />
       <Stat label="Pending Approvals" value={summary.pending_vehicle_approvals} />
       <Stat label="Active Bookings" value={summary.active_bookings} />
       <Stat label="Completed Bookings" value={summary.completed_bookings} />
       <Stat label="Revenue Estimate" value={`PKR ${summary.revenue_estimate}`} />
-      <p style={{ gridColumn: "1 / -1", fontSize: 13, color: "#888" }}>{summary.note}</p>
+      <p className="muted" style={{ gridColumn: "1 / -1" }}>{summary.note}</p>
     </div>
   );
 }
 
 function Stat({ label, value }) {
   return (
-    <div style={{ border: "1px solid #ddd", borderRadius: 8, padding: 16 }}>
-      <div style={{ fontSize: 13, color: "#888" }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: "bold" }}>{value}</div>
+    <div className="stat-card">
+      <div className="label">{label}</div>
+      <div className="value">{value}</div>
     </div>
   );
 }
@@ -62,17 +62,19 @@ function PendingVehiclesTab() {
     }
   };
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (vehicles.length === 0) return <p>No vehicles pending approval.</p>;
+  if (error) return <p className="alert-error">{error}</p>;
+  if (vehicles.length === 0) return <p className="muted">No vehicles pending approval.</p>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {vehicles.map((v) => (
-        <div key={v.id} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
-          <p><strong>{v.title}</strong> — {v.location}</p>
-          <p>{v.transmission} · {v.fuel_type} · {v.year}</p>
-          <button onClick={() => act(v.id, "APPROVED")} disabled={actingId === v.id}>Approve</button>{" "}
-          <button onClick={() => act(v.id, "REJECTED")} disabled={actingId === v.id}>Reject</button>
+        <div key={v.id} className="card">
+          <div className="card-body">
+            <p><strong>{v.title}</strong> — {v.location}</p>
+            <p className="muted">{v.transmission} · {v.fuel_type} · {v.year}</p>
+            <button className="btn-primary btn-sm" onClick={() => act(v.id, "APPROVED")} disabled={actingId === v.id}>Approve</button>{" "}
+            <button className="btn-danger btn-sm" onClick={() => act(v.id, "REJECTED")} disabled={actingId === v.id}>Reject</button>
+          </div>
         </div>
       ))}
     </div>
@@ -119,24 +121,24 @@ function AllVehiclesTab() {
     }
   };
 
-  if (vehicles.length === 0 && !error) return <p>No vehicles yet.</p>;
+  if (vehicles.length === 0 && !error) return <p className="muted">No vehicles yet.</p>;
 
   return (
     <div>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      {error && <p className="alert-error">{error}</p>}
+      <table>
         <thead>
-          <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+          <tr>
             <th>ID</th><th>Title</th><th>Location</th><th>Status</th><th>Change Availability</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {vehicles.map((v) => (
-            <tr key={v.id} style={{ borderBottom: "1px solid #eee" }}>
+            <tr key={v.id}>
               <td>{v.id}</td>
               <td>{v.title}</td>
               <td>{v.location}</td>
-              <td>{v.status}</td>
+              <td><span className={`status-pill status-${v.status.toLowerCase()}`}>{v.status}</span></td>
               <td>
                 <select
                   value={v.status}
@@ -150,7 +152,7 @@ function AllVehiclesTab() {
                 </select>
               </td>
               <td>
-                <button onClick={() => deleteVehicle(v)} disabled={savingId === v.id}>Delete</button>
+                <button className="btn-danger btn-sm" onClick={() => deleteVehicle(v)} disabled={savingId === v.id}>Delete</button>
               </td>
             </tr>
           ))}
@@ -159,6 +161,7 @@ function AllVehiclesTab() {
     </div>
   );
 }
+
 function BookingsTab() {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState("");
@@ -174,6 +177,7 @@ function BookingsTab() {
 
   const setStatus = async (id, newStatus) => {
     setActingId(id);
+    setError("");
     try {
       await api.patch(`/bookings/${id}/status`, { status: newStatus });
       setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b)));
@@ -184,43 +188,45 @@ function BookingsTab() {
     }
   };
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (bookings.length === 0) return <p>No bookings yet.</p>;
+  if (bookings.length === 0 && !error) return <p className="muted">No bookings yet.</p>;
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-          <th>ID</th><th>Vehicle</th><th>User</th><th>Dates</th><th>Total</th><th>Status</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {bookings.map((b) => (
-          <tr key={b.id} style={{ borderBottom: "1px solid #eee" }}>
-            <td>{b.id}</td>
-            <td>{b.vehicle_id}</td>
-            <td>{b.user_id}</td>
-            <td>{b.start_date} → {b.end_date}</td>
-            <td>PKR {b.total_price}</td>
-            <td>{b.status}</td>
-            <td>
-              {b.status === "PENDING" && (
-                <>
-                  <button onClick={() => setStatus(b.id, "CONFIRMED")} disabled={actingId === b.id}>Confirm</button>{" "}
-                  <button onClick={() => setStatus(b.id, "CANCELLED")} disabled={actingId === b.id}>Cancel</button>
-                </>
-              )}
-              {b.status === "CONFIRMED" && (
-                <>
-                  <button onClick={() => setStatus(b.id, "COMPLETED")} disabled={actingId === b.id}>Mark Completed</button>{" "}
-                  <button onClick={() => setStatus(b.id, "CANCELLED")} disabled={actingId === b.id}>Cancel</button>
-                </>
-              )}
-            </td>
+    <div>
+      {error && <p className="alert-error">{error}</p>}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Vehicle</th><th>User</th><th>Dates</th><th>Total</th><th>Status</th><th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {bookings.map((b) => (
+            <tr key={b.id}>
+              <td>{b.id}</td>
+              <td>{b.vehicle_id}</td>
+              <td>{b.user_id}</td>
+              <td className="mono">{b.start_date} → {b.end_date}</td>
+              <td className="mono">PKR {b.total_price}</td>
+              <td><span className={`status-pill status-${b.status.toLowerCase()}`}>{b.status}</span></td>
+              <td>
+                {b.status === "PENDING" && (
+                  <>
+                    <button className="btn-primary btn-sm" onClick={() => setStatus(b.id, "CONFIRMED")} disabled={actingId === b.id}>Confirm</button>{" "}
+                    <button className="btn-danger btn-sm" onClick={() => setStatus(b.id, "CANCELLED")} disabled={actingId === b.id}>Cancel</button>
+                  </>
+                )}
+                {b.status === "CONFIRMED" && (
+                  <>
+                    <button className="btn-secondary btn-sm" onClick={() => setStatus(b.id, "COMPLETED")} disabled={actingId === b.id}>Mark Completed</button>{" "}
+                    <button className="btn-danger btn-sm" onClick={() => setStatus(b.id, "CANCELLED")} disabled={actingId === b.id}>Cancel</button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -234,23 +240,23 @@ function UsersTab() {
       .catch(() => setError("Could not load users."));
   }, []);
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (error) return <p className="alert-error">{error}</p>;
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table>
       <thead>
-        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
+        <tr>
           <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th>
         </tr>
       </thead>
       <tbody>
         {users.map((u) => (
-          <tr key={u.id} style={{ borderBottom: "1px solid #eee" }}>
+          <tr key={u.id}>
             <td>{u.id}</td>
             <td>{u.full_name}</td>
             <td>{u.email}</td>
             <td>{u.role}</td>
-            <td>{new Date(u.created_at).toLocaleDateString()}</td>
+            <td className="mono">{new Date(u.created_at).toLocaleDateString()}</td>
           </tr>
         ))}
       </tbody>
@@ -264,16 +270,17 @@ function ManageToursTab() {
   const [busyId, setBusyId] = useState(null);
 
   const load = () => {
-  api.get("/admin/tours")
-    .then((res) => setTours(res.data))
-    .catch(() => setError("Could not load tours."));
-};
+    api.get("/admin/tours")
+      .then((res) => setTours(res.data))
+      .catch(() => setError("Could not load tours."));
+  };
 
   useEffect(load, []);
 
   const toggleStatus = async (t) => {
     const newStatus = t.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     setBusyId(t.id);
+    setError("");
     try {
       await api.put(`/tours/${t.id}`, { status: newStatus });
       setTours((prev) => prev.map((x) => (x.id === t.id ? { ...x, status: newStatus } : x)));
@@ -287,6 +294,7 @@ function ManageToursTab() {
   const remove = async (id) => {
     if (!window.confirm("Delete this tour? This cannot be undone.")) return;
     setBusyId(id);
+    setError("");
     try {
       await api.delete(`/tours/${id}`);
       setTours((prev) => prev.filter((t) => t.id !== id));
@@ -297,35 +305,37 @@ function ManageToursTab() {
     }
   };
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (tours.length === 0) return <p>No tours yet.</p>;
+  if (tours.length === 0 && !error) return <p className="muted">No tours yet.</p>;
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-          <th>ID</th><th>Type</th><th>Title</th><th>Destination</th><th>Price</th><th>Status</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tours.map((t) => (
-          <tr key={t.id} style={{ borderBottom: "1px solid #eee" }}>
-            <td>{t.id}</td>
-            <td>{t.tour_type === "GROUP_BUS" ? "Group Bus" : "Private Car"}</td>
-            <td>{t.title}</td>
-            <td>{t.destination}</td>
-            <td>PKR {t.price}</td>
-            <td>{t.status}</td>
-            <td>
-              <button onClick={() => toggleStatus(t)} disabled={busyId === t.id}>
-                {t.status === "ACTIVE" ? "Deactivate" : "Activate"}
-              </button>{" "}
-              <button onClick={() => remove(t.id)} disabled={busyId === t.id}>Delete</button>
-            </td>
+    <div>
+      {error && <p className="alert-error">{error}</p>}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Type</th><th>Title</th><th>Destination</th><th>Price</th><th>Status</th><th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {tours.map((t) => (
+            <tr key={t.id}>
+              <td>{t.id}</td>
+              <td>{t.tour_type === "GROUP_BUS" ? "Group Bus" : "Private Car"}</td>
+              <td>{t.title}</td>
+              <td>{t.destination}</td>
+              <td className="mono">PKR {t.price}</td>
+              <td><span className={`status-pill status-${t.status.toLowerCase()}`}>{t.status}</span></td>
+              <td>
+                <button className="btn-secondary btn-sm" onClick={() => toggleStatus(t)} disabled={busyId === t.id}>
+                  {t.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                </button>{" "}
+                <button className="btn-danger btn-sm" onClick={() => remove(t.id)} disabled={busyId === t.id}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -342,28 +352,21 @@ export default function AdminDashboard() {
   const { isAuthenticated, isAdmin, userLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("summary");
 
-  if (userLoading) return <p>Loading...</p>;
-  if (!isAuthenticated) return <p>Please log in to view this page.</p>;
-  if (!isAdmin) return <p>You don't have access to this page.</p>;
+  if (userLoading) return <div className="page"><p className="muted">Loading...</p></div>;
+  if (!isAuthenticated) return <div className="page"><p className="alert-error">Please log in to view this page.</p></div>;
+  if (!isAdmin) return <div className="page"><p className="alert-error">You don't have access to this page.</p></div>;
 
   const ActiveComponent = TABS.find((t) => t.key === activeTab).Component;
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto" }}>
+    <div className="page">
       <h2>Admin Dashboard</h2>
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, borderBottom: "1px solid #ddd" }}>
+      <div className="tabs">
         {TABS.map((t) => (
           <button
             key={t.key}
+            className={`tab ${activeTab === t.key ? "active" : ""}`}
             onClick={() => setActiveTab(t.key)}
-            style={{
-              padding: "8px 12px",
-              border: "none",
-              borderBottom: activeTab === t.key ? "2px solid #333" : "2px solid transparent",
-              background: "none",
-              cursor: "pointer",
-              fontWeight: activeTab === t.key ? "bold" : "normal",
-            }}
           >
             {t.label}
           </button>
