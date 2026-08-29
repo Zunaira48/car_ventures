@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.tour import Tour
+from app.models.tour_booking import TourBooking
 from app.models.user import User
 from app.schemas.tour import TourCreate, TourUpdate, TourOut
 from app.auth.dependencies import require_admin
@@ -48,5 +49,14 @@ def delete_tour(tour_id: int, db: Session = Depends(get_db), current_user: User 
     tour = db.query(Tour).filter(Tour.id == tour_id).first()
     if not tour:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tour not found")
+
+    booking_count = db.query(TourBooking).filter(TourBooking.tour_id == tour_id).count()
+    if booking_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete: this tour has {booking_count} booking(s) on record. "
+                   f"Set its status to INACTIVE instead to hide it from listings without losing booking history.",
+        )
+
     db.delete(tour)
     db.commit()

@@ -8,7 +8,7 @@ os.environ.setdefault("JWT_SECRET", "test-secret-key-not-for-production")
 os.environ.setdefault("ADMIN_EMAIL", "admin@test.com")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173")
 
-import pytest  # type: ignore[import-not-found]
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -111,4 +111,19 @@ def make_vehicle(client, register_admin):
         approve = client.put(f"/vehicles/{vehicle['id']}", json={"status": "APPROVED"}, headers=admin_headers)
         assert approve.status_code == 200, approve.text
         return approve.json()
+    return _make
+
+@pytest.fixture
+def make_tour(client, register_admin):
+    """Creates a tour. Tours go ACTIVE immediately on creation (no separate approval step, unlike vehicles)."""
+    def _make(**overrides):
+        _, admin_headers = register_admin()
+        payload = {
+            "tour_type": "GROUP_BUS", "title": "Test Tour", "destination": "Hunza Valley",
+            "duration_days": 3, "price": 10000, "max_group_size": 20,
+        }
+        payload.update(overrides)
+        res = client.post("/tours", json=payload, headers=admin_headers)
+        assert res.status_code == 201, res.text
+        return res.json()
     return _make
