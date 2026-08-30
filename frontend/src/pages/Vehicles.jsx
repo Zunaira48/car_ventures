@@ -66,7 +66,15 @@ export default function Vehicles() {
         {vehicles.map((v) => (
           <Link key={v.id} to={`/vehicles/${v.id}`} className="card">
             <div className="card-photo">
-              {v.images?.[0] && <img src={v.images[0]} alt={v.title} />}
+              {v.images?.[0] ? (
+                <img src={v.images[0]} alt={v.title} />
+              ) : (
+                <svg className="card-photo-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <circle cx="8.5" cy="9.5" r="1.5" />
+                  <path d="M21 16l-5-5-4 4-3-3-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </div>
             {isAuthenticated && (
               <button className="favorite-btn" onClick={(e) => toggleFavorite(e, v.id)}>
