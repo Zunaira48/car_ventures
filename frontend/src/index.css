@@ -240,6 +240,10 @@ td { border-bottom: 1px solid var(--border); padding: 10px 6px; font-size: 14px;
 .skeleton-line.w-70 { width: 70%; }
 .skeleton-line.w-50 { width: 50%; }
 .skeleton-line.w-40 { width: 40%; }
+.skeleton-ticket { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: stretch; max-width: 560px; box-shadow: var(--shadow-sm); }
+.skeleton-ticket-main { padding: 16px 20px; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.skeleton-ticket-stub { padding: 16px 18px; display: flex; align-items: center; justify-content: center; min-width: 110px; }
+
 
 /* ---------- Notifications ---------- */
 .notif-list { display: flex; flex-direction: column; gap: 8px; }

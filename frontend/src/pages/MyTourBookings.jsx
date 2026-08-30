@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
+import { SkeletonTicketList } from "../components/Skeleton";
 
 export default function MyTourBookings() {
   const [bookings, setBookings] = useState([]);
@@ -33,17 +34,20 @@ export default function MyTourBookings() {
     }
   };
 
-  if (loading) return <p className="page muted">Loading your tour bookings...</p>;
-  if (error) return <p className="page alert-error">{error}</p>;
-
   return (
     <div className="page">
       <h2>My Tour Bookings</h2>
-      {bookings.length === 0 ? (
+
+      {loading && <SkeletonTicketList count={3} />}
+      {error && <p className="alert-error">{error}</p>}
+
+      {!loading && !error && bookings.length === 0 && (
         <p className="muted">
           You have no tour bookings yet. <Link to="/tours">Browse tours</Link>.
         </p>
-      ) : (
+      )}
+
+      {!loading && !error && bookings.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {bookings.map((b) => (
             <div key={b.id} className="ticket">

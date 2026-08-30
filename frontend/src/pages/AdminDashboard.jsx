@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
 import { useAuth } from "../context/useAuth";
+import { SkeletonStatsGrid, SkeletonCardRowList, SkeletonTable } from "../components/Skeleton";
 
 function SummaryTab() {
   const [summary, setSummary] = useState(null);
@@ -13,7 +14,7 @@ function SummaryTab() {
   }, []);
 
   if (error) return <p className="alert-error">{error}</p>;
-  if (!summary) return <p className="muted">Loading...</p>;
+  if (!summary) return <SkeletonStatsGrid count={6} />;
 
   return (
     <div className="stats-grid">
@@ -39,15 +40,19 @@ function Stat({ label, value }) {
 
 function PendingVehiclesTab() {
   const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState(null);
 
   const load = () => {
+    setLoading(true);
     api.get("/admin/vehicles/pending")
       .then((res) => setVehicles(res.data))
-      .catch(() => setError("Could not load pending vehicles."));
+      .catch(() => setError("Could not load pending vehicles."))
+      .finally(() => setLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const act = async (id, status) => {
@@ -62,6 +67,7 @@ function PendingVehiclesTab() {
     }
   };
 
+  if (loading) return <SkeletonCardRowList count={3} />;
   if (error) return <p className="alert-error">{error}</p>;
   if (vehicles.length === 0) return <p className="muted">No vehicles pending approval.</p>;
 
@@ -83,15 +89,19 @@ function PendingVehiclesTab() {
 
 function AllVehiclesTab() {
   const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState(null);
 
   const load = () => {
+    setLoading(true);
     api.get("/admin/vehicles")
       .then((res) => setVehicles(res.data))
-      .catch(() => setError("Could not load vehicles."));
+      .catch(() => setError("Could not load vehicles."))
+      .finally(() => setLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const setVehicleStatus = async (id, status) => {
@@ -121,6 +131,7 @@ function AllVehiclesTab() {
     }
   };
 
+  if (loading) return <SkeletonTable rows={5} cols={6} />;
   if (vehicles.length === 0 && !error) return <p className="muted">No vehicles yet.</p>;
 
   return (
@@ -164,15 +175,19 @@ function AllVehiclesTab() {
 
 function BookingsTab() {
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState(null);
 
   const load = () => {
+    setLoading(true);
     api.get("/admin/bookings")
       .then((res) => setBookings(res.data))
-      .catch(() => setError("Could not load bookings."));
+      .catch(() => setError("Could not load bookings."))
+      .finally(() => setLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const setStatus = async (id, newStatus) => {
@@ -188,6 +203,7 @@ function BookingsTab() {
     }
   };
 
+  if (loading) return <SkeletonTable rows={5} cols={7} />;
   if (bookings.length === 0 && !error) return <p className="muted">No bookings yet.</p>;
 
   return (
@@ -232,14 +248,21 @@ function BookingsTab() {
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     api.get("/admin/users")
       .then((res) => setUsers(res.data))
-      .catch(() => setError("Could not load users."));
-  }, []);
+      .catch(() => setError("Could not load users."))
+      .finally(() => setLoading(false));
+  };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(load, []);
+
+  if (loading) return <SkeletonTable rows={5} cols={5} />;
   if (error) return <p className="alert-error">{error}</p>;
 
   return (
@@ -266,15 +289,19 @@ function UsersTab() {
 
 function ManageToursTab() {
   const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState(null);
 
   const load = () => {
+    setLoading(true);
     api.get("/admin/tours")
       .then((res) => setTours(res.data))
-      .catch(() => setError("Could not load tours."));
+      .catch(() => setError("Could not load tours."))
+      .finally(() => setLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const toggleStatus = async (t) => {
@@ -305,6 +332,7 @@ function ManageToursTab() {
     }
   };
 
+  if (loading) return <SkeletonTable rows={5} cols={7} />;
   if (tours.length === 0 && !error) return <p className="muted">No tours yet.</p>;
 
   return (
