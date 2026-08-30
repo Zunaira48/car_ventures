@@ -39,6 +39,8 @@ def update_tour(tour_id: int, payload: TourUpdate, db: Session = Depends(get_db)
     if not tour:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tour not found")
     for field, value in payload.model_dump(exclude_unset=True).items():
+        if field == "status":
+            value = payload.status.value
         setattr(tour, field, value)
     db.commit()
     db.refresh(tour)

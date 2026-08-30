@@ -114,7 +114,7 @@ def update_booking_status(
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
-    booking.status = payload.status
+    booking.status = payload.status.value
     db.commit()
     db.refresh(booking)
     status_messages = {
@@ -122,7 +122,7 @@ def update_booking_status(
         "CANCELLED": "Your booking has been cancelled by the admin.",
         "COMPLETED": "Your booking has been marked as completed. Feel free to leave a review!",
     }
-    if payload.status in status_messages:
-        notify(db, booking.user_id, status_messages[payload.status], "/bookings")
+    if payload.status.value in status_messages:
+        notify(db, booking.user_id, status_messages[payload.status.value], "/bookings")
         db.commit()
     return booking

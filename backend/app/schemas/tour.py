@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import date, datetime
+from app.schemas.common import BookingStatus, TourStatus
 
 VALID_TOUR_TYPES = {"GROUP_BUS", "PRIVATE_CAR_GUIDE"}
 
@@ -30,7 +31,7 @@ class TourUpdate(BaseModel):
     max_group_size: int | None = None
     included_facilities: list[str] | None = None
     images: list[str] | None = None
-    status: str | None = None
+    status: TourStatus | None = None
 
 class TourOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -66,4 +67,4 @@ class TourBookingOut(BaseModel):
     created_at: datetime
 
 class TourBookingStatusUpdate(BaseModel):
-    status: str
+    status: BookingStatus

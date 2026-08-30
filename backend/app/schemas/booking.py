@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import date, datetime
+from app.schemas.common import BookingStatus
 
 class BookingCreate(BaseModel):
     vehicle_id: int
@@ -32,4 +33,4 @@ class BookingOut(BaseModel):
     created_at: datetime
 
 class BookingStatusUpdate(BaseModel):
-    status: str
+    status: BookingStatus

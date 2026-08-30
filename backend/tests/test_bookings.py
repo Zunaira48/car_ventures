@@ -123,3 +123,13 @@ def test_admin_can_confirm_booking(client, register_admin, register_user, make_v
     res = client.patch(f"/bookings/{booking_id}/status", json={"status": "CONFIRMED"}, headers=admin_headers)
     assert res.status_code == 200
     assert res.json()["status"] == "CONFIRMED"
+
+def test_admin_cannot_set_invalid_booking_status(client, register_admin, register_user, make_vehicle):
+    vehicle = make_vehicle()
+    _, admin_headers = register_admin()
+    _, user_headers = register_user()
+    booking = _book(client, user_headers, vehicle["id"], "2026-09-01", "2026-09-05")
+    booking_id = booking.json()["id"]
+
+    res = client.patch(f"/bookings/{booking_id}/status", json={"status": "NOT_A_REAL_STATUS"}, headers=admin_headers)
+    assert res.status_code == 422

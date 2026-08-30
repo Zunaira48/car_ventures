@@ -198,3 +198,22 @@ def test_delete_tour_with_active_bookings_is_blocked(client, register_admin, reg
     assert "booking" in res.json()["detail"].lower()
     # tour must still exist
     assert client.get(f"/tours/{tour['id']}").status_code == 200
+
+
+def test_admin_cannot_set_invalid_tour_status(client, register_admin, make_tour):
+    _, headers = register_admin()
+    tour = make_tour()
+    res = client.put(f"/tours/{tour['id']}", json={"status": "DELETED"}, headers=headers)
+    assert res.status_code == 422   
+
+def test_admin_cannot_set_invalid_tour_booking_status(client, register_admin, register_user, make_tour):
+    tour = make_tour()
+    _, admin_headers = register_admin()
+    _, user_headers = register_user()
+    booking = client.post("/tour-bookings", json={
+        "tour_id": tour["id"], "start_date": "2026-10-01", "num_people": 2,
+    }, headers=user_headers)
+    booking_id = booking.json()["id"]
+
+    res = client.patch(f"/tour-bookings/{booking_id}/status", json={"status": "NOT_A_REAL_STATUS"}, headers=admin_headers)
+    assert res.status_code == 422 
