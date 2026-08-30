@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/useAuth";
+import { SkeletonGrid } from "../components/Skeleton";
 
 export default function Vehicles() {
   const { isAuthenticated } = useAuth();
@@ -58,12 +59,13 @@ export default function Vehicles() {
         {!loading && <span className="muted">{vehicles.length} result{vehicles.length !== 1 ? "s" : ""}</span>}
       </div>
 
-      {loading && <p className="muted">Loading vehicles...</p>}
+      {loading && <SkeletonGrid count={6} />}
       {error && <p className="alert-error">{error}</p>}
       {!loading && !error && vehicles.length === 0 && <p className="muted">No vehicles available yet.</p>}
 
-      <div className="grid">
-        {vehicles.map((v) => (
+      {!loading && (
+        <div className="grid">
+          {vehicles.map((v) => (
           <Link key={v.id} to={`/vehicles/${v.id}`} className="card">
             <div className="card-photo">
               {v.images?.[0] ? (
@@ -92,8 +94,9 @@ export default function Vehicles() {
               </div>
             </div>
           </Link>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

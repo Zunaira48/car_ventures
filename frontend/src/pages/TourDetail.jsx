@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/useAuth";
+import { SkeletonDetail } from "../components/Skeleton";
 
 export default function TourDetail() {
   const { id } = useParams();
@@ -68,7 +69,7 @@ export default function TourDetail() {
     }
   };
 
-  if (loading) return <p className="page muted">Loading tour...</p>;
+  if (loading) return <SkeletonDetail />;
   if (error) return <p className="page alert-error">{error}</p>;
   if (!tour) return null;
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/useAuth";
+import { SkeletonDetail } from "../components/Skeleton";
 
 function ReviewsSection({ vehicleId }) {
   const { isAuthenticated, user } = useAuth();
@@ -176,7 +177,7 @@ export default function VehicleDetail() {
     }
   };
 
-  if (loading) return <p className="page muted">Loading vehicle...</p>;
+  if (loading) return <SkeletonDetail />;
   if (error) return <p className="page alert-error">{error}</p>;
   if (!vehicle) return null;
 

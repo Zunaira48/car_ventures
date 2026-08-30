@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
+import { SkeletonGrid } from "../components/Skeleton";
 
 export default function Tours() {
   const [tours, setTours] = useState([]);
@@ -18,14 +19,14 @@ export default function Tours() {
     <div className="page">
       <h2>Tours</h2>
 
-      {loading && <p className="muted">Loading tours...</p>}
+      {loading && <SkeletonGrid count={4} />}
       {error && <p className="alert-error">{error}</p>}
       {!loading && !error && tours.length === 0 && <p className="muted">No tours available yet.</p>}
 
-      {!loading && !error && tours.length > 0 && (
-        <div className="cards-grid">
+      {!loading && (
+        <div className="grid">
           {tours.map((t) => (
-            <Link key={t.id ?? t._id ?? t.title} to={`/tours/${t.id ?? t._id}`} className="card-link" aria-label={`View tour: ${t.title}`}>
+            <Link key={t.id} to={`/tours/${t.id}`} className="card">
               <div className="card-photo">
                 {t.images?.[0] ? (
                   <img src={t.images[0]} alt={t.title} />

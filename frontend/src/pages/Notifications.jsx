@@ -44,38 +44,44 @@ export default function Notifications() {
     }
   };
 
-  if (loading) return <p>Loading notifications...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-
   const hasUnread = notifications.some((n) => !n.is_read);
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div className="page-narrow">
+      <div className="section-head">
         <h2>Notifications</h2>
-        {hasUnread && <button onClick={markAllRead}>Mark all as read</button>}
+        {hasUnread && <button className="btn-secondary btn-sm" onClick={markAllRead}>Mark all as read</button>}
       </div>
-      {notifications.length === 0 ? (
-        <p>No notifications yet.</p>
+
+      {error && <p className="alert-error">{error}</p>}
+
+      {loading ? (
+        <div className="notif-list">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="notif-item">
+              <div style={{ flex: 1 }}>
+                <div className="skeleton skeleton-line w-70" style={{ marginBottom: 8 }} />
+                <div className="skeleton skeleton-line w-40" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : notifications.length === 0 ? (
+        <p className="muted">No notifications yet.</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="notif-list">
           {notifications.map((n) => (
             <div
               key={n.id}
               onClick={() => handleClick(n)}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 12,
-                cursor: n.link ? "pointer" : "default",
-                background: n.is_read ? "transparent" : "rgba(100, 100, 255, 0.08)",
-                fontWeight: n.is_read ? "normal" : "bold",
-              }}
+              className={`notif-item ${n.is_read ? "" : "unread"}`}
+              style={{ cursor: n.link ? "pointer" : "default" }}
             >
-              <p style={{ margin: 0 }}>{n.message}</p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, color: "#888", fontWeight: "normal" }}>
-                {new Date(n.created_at).toLocaleString()}
-              </p>
+              {!n.is_read && <span className="notif-dot" />}
+              <div>
+                <p className="notif-message">{n.message}</p>
+                <p className="notif-time mono">{new Date(n.created_at).toLocaleString()}</p>
+              </div>
             </div>
           ))}
         </div>

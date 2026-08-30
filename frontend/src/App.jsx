@@ -18,8 +18,12 @@ import Footer from "./components/Footer";
 
 function Nav() {
   const { isAuthenticated, isAdmin, unreadCount, logout } = useAuth();
+  const location = useLocation();
   return (
     <nav className="navbar">
+      {location.pathname !== "/" && (
+        <Link to="/" className="nav-back" aria-label="Back to home">←</Link>
+      )}
       <Link to="/" className="logo">car_<span>ventures</span></Link>
       <NavLink to="/vehicles">Vehicles</NavLink>
       <NavLink to="/tours">Tours</NavLink>
@@ -46,23 +50,12 @@ function Nav() {
   );
 }
 
-function BackToHome() {
-  const location = useLocation();
-  if (location.pathname === "/") return null;
-  return (
-    <div className="back-home-bar">
-      <Link to="/" className="back-home">← Back to Home</Link>
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
           <Nav />
-          <BackToHome />
           <div style={{ flex: 1 }}>
             <Routes>
               <Route path="/" element={<Home />} />

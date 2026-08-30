@@ -7,8 +7,9 @@ export default function Footer() {
         <div>
           <p className="footer-logo">car_<span>ventures</span></p>
           <p className="muted" style={{ maxWidth: 320 }}>
-            A student portfolio project demonstrating a full-stack vehicle rental,
-            marketplace, and tourism platform. Not a real operational business.
+            A full-stack vehicle rental, marketplace, and tourism platform built to
+            showcase production-style engineering &mdash; REST APIs, relational data
+            modeling, and AI-assisted pricing. Demo data only, not a live business.
           </p>
         </div>
         <div>
@@ -26,7 +27,7 @@ export default function Footer() {
           <Link to="/notifications">Notifications</Link>
         </div>
       </div>
-      <p className="footer-bottom muted">car_ventures &mdash; portfolio project, demo data only.</p>
+      <p className="footer-bottom muted">car_ventures &mdash; a portfolio project. Demo data only.</p>
     </footer>
   );
 }
