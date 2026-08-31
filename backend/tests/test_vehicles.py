@@ -94,3 +94,9 @@ def test_delete_nonexistent_vehicle_returns_404(client, register_admin):
     _, headers = register_admin()
     res = client.delete("/vehicles/999999", headers=headers)
     assert res.status_code == 404
+
+def test_admin_cannot_set_invalid_vehicle_status(client, register_admin, make_vehicle):
+    vehicle = make_vehicle()
+    _, admin_headers = register_admin()
+    res = client.put(f"/vehicles/{vehicle['id']}", json={"status": "DELETED"}, headers=admin_headers)
+    assert res.status_code == 422

@@ -97,6 +97,8 @@ def update_vehicle(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
 
     for field, value in payload.model_dump(exclude_unset=True).items():
+        if field == "status":
+            value = payload.status.value
         setattr(vehicle, field, value)
 
     db.commit()

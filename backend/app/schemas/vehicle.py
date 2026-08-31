@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+from app.schemas.common import VehicleStatus
 
 class VehicleCreate(BaseModel):
     title: str
@@ -40,7 +41,7 @@ class VehicleUpdate(BaseModel):
     description: str | None = None
     features: list[str] | None = None
     images: list[str] | None = None
-    status: str | None = None
+    status: VehicleStatus | None = None
 
 class VehicleOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

@@ -22,3 +22,15 @@ class TourStatus(str, Enum):
     """
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
+
+
+class VehicleStatus(str, Enum):
+    """Moderation lifecycle for a vehicle listing.
+
+    Same rationale as BookingStatus/TourStatus: plain String column in the DB,
+    validation only tightened at the API boundary (VehicleUpdate.status).
+    """
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    SUSPENDED = "SUSPENDED"
