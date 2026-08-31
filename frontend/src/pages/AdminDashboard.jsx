@@ -137,6 +137,7 @@ function AllVehiclesTab() {
   return (
     <div>
       {error && <p className="alert-error">{error}</p>}
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -169,6 +170,7 @@ function AllVehiclesTab() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -209,6 +211,7 @@ function BookingsTab() {
   return (
     <div>
       {error && <p className="alert-error">{error}</p>}
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -242,6 +245,7 @@ function BookingsTab() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -266,6 +270,7 @@ function UsersTab() {
   if (error) return <p className="alert-error">{error}</p>;
 
   return (
+    <div className="table-scroll">
     <table>
       <thead>
         <tr>
@@ -284,6 +289,7 @@ function UsersTab() {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -338,6 +344,7 @@ function ManageToursTab() {
   return (
     <div>
       {error && <p className="alert-error">{error}</p>}
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -363,6 +370,7 @@ function ManageToursTab() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

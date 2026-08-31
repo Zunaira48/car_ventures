@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, NavLink, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/useAuth";
@@ -19,33 +20,61 @@ import Footer from "./components/Footer";
 function Nav() {
   const { isAuthenticated, isAdmin, unreadCount, logout } = useAuth();
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMenuOpen(false), [location.pathname]);
+
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <nav className="navbar">
       {location.pathname !== "/" && (
         <Link to="/" className="nav-back" aria-label="Back to home">←</Link>
       )}
       <Link to="/" className="logo">car_<span>ventures</span></Link>
-      <NavLink to="/vehicles">Vehicles</NavLink>
-      <NavLink to="/tours">Tours</NavLink>
-      {isAuthenticated ? (
-        <>
-          <NavLink to="/bookings">My Bookings</NavLink>
-          <NavLink to="/tour-bookings">My Tour Bookings</NavLink>
-          <NavLink to="/favorites">My Favorites</NavLink>
-          <NavLink to="/notifications">
-            Notifications
-            {unreadCount > 0 && <span className="nav-badge">{unreadCount}</span>}
-          </NavLink>
-          {isAdmin && <NavLink to="/admin/add-vehicle">Add Vehicle</NavLink>}
-          {isAdmin && <NavLink to="/admin" end>Admin</NavLink>}
-          <button className="btn-secondary btn-sm" onClick={logout}>Logout</button>
-        </>
-      ) : (
-        <>
-          <NavLink to="/login">Login</NavLink>
-          <NavLink to="/register">Register</NavLink>
-        </>
-      )}
+
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((v) => !v)}
+      >
+        {menuOpen ? (
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
+          </svg>
+        )}
+      </button>
+
+      <div className={`nav-links${menuOpen ? " open" : ""}`}>
+        <NavLink to="/vehicles" onClick={closeMenu}>Vehicles</NavLink>
+        <NavLink to="/tours" onClick={closeMenu}>Tours</NavLink>
+        {isAuthenticated ? (
+          <>
+            <NavLink to="/bookings" onClick={closeMenu}>My Bookings</NavLink>
+            <NavLink to="/tour-bookings" onClick={closeMenu}>My Tour Bookings</NavLink>
+            <NavLink to="/favorites" onClick={closeMenu}>My Favorites</NavLink>
+            <NavLink to="/notifications" onClick={closeMenu}>
+              Notifications
+              {unreadCount > 0 && <span className="nav-badge">{unreadCount}</span>}
+            </NavLink>
+            {isAdmin && <NavLink to="/admin/add-vehicle" onClick={closeMenu}>Add Vehicle</NavLink>}
+            {isAdmin && <NavLink to="/admin" end onClick={closeMenu}>Admin</NavLink>}
+            <button className="btn-secondary btn-sm" onClick={() => { closeMenu(); logout(); }}>Logout</button>
+          </>
+        ) : (
+          <>
+            <NavLink to="/login" onClick={closeMenu}>Login</NavLink>
+            <NavLink to="/register" onClick={closeMenu}>Register</NavLink>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
