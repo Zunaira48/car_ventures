@@ -39,6 +39,27 @@ def test_login_is_case_insensitive_on_email(client):
     assert res.status_code == 200
     assert "access_token" in res.json()
 
+
+def test_login_is_rate_limited_after_5_attempts_per_minute(client):
+    client.post("/auth/register", json={"full_name": "A", "email": "rl-login@example.com", "password": "pass1234"})
+    for _ in range(5):
+        res = client.post("/auth/login", json={"email": "rl-login@example.com", "password": "wrongpass"})
+        assert res.status_code == 401
+    res = client.post("/auth/login", json={"email": "rl-login@example.com", "password": "wrongpass"})
+    assert res.status_code == 429
+
+
+def test_register_is_rate_limited_after_10_attempts_per_minute(client):
+    for i in range(10):
+        res = client.post("/auth/register", json={
+            "full_name": "A", "email": f"rl-register-{i}@example.com", "password": "pass1234",
+        })
+        assert res.status_code == 201
+    res = client.post("/auth/register", json={
+        "full_name": "A", "email": "rl-register-overflow@example.com", "password": "pass1234",
+    })
+    assert res.status_code == 429
+    
 def test_login_wrong_password_rejected(client):
     client.post("/auth/register", json={"full_name": "A", "email": "x@example.com", "password": "correctpass"})
     res = client.post("/auth/login", json={"email": "x@example.com", "password": "wrongpass"})

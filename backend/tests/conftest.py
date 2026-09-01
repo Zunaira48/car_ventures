@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 
 from app.database import Base, get_db
 from app.main import app
+from app.rate_limit import limiter
 
 # A single shared in-memory SQLite connection for the whole test run (StaticPool
 # keeps it alive across sessions instead of each connect() getting a fresh,
@@ -45,6 +46,13 @@ def _fresh_db():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+    """TestClient always reports the same client IP, so without this every test
+    in the suite would share one rate-limit bucket on /auth/register and
+    /auth/login and start failing with 429s partway through the run."""
+    limiter.reset()
 
 
 @pytest.fixture
