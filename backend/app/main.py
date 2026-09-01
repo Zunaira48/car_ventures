@@ -35,5 +35,5 @@ def health_db():
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return {"status": "ok", "database": "connected"}
-    except Exception as e:
-        return {"status": "error", "database": str(e)}
+    except Exception:
+        return {"status": "error", "database": "unavailable"}

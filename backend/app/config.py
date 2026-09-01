@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str
     cors_origins: str = "http://localhost:5173"
-    jwt_secret: str = "change-me-in-env"
+    jwt_secret: str
     admin_email: str = ""
 
     model_config = SettingsConfigDict(

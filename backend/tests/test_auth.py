@@ -22,6 +22,22 @@ def test_register_with_non_admin_email_does_not_get_admin_role(register_user):
     user, _ = register_user(email="definitely-not-admin@example.com")
     assert user["role"] == "user"
 
+def test_register_rejects_password_shorter_than_8_chars(client):
+    res = client.post("/auth/register", json={"full_name": "A", "email": "short@example.com", "password": "short1"})
+    assert res.status_code == 422
+
+
+def test_register_duplicate_email_rejected_case_insensitively(client):
+    client.post("/auth/register", json={"full_name": "A", "email": "CaseTest@Example.com", "password": "pass1234"})
+    res = client.post("/auth/register", json={"full_name": "B", "email": "casetest@example.com", "password": "pass1234"})
+    assert res.status_code == 409
+
+
+def test_login_is_case_insensitive_on_email(client):
+    client.post("/auth/register", json={"full_name": "A", "email": "MixedCase@Example.com", "password": "pass1234"})
+    res = client.post("/auth/login", json={"email": "mixedcase@example.com", "password": "pass1234"})
+    assert res.status_code == 200
+    assert "access_token" in res.json()
 
 def test_login_wrong_password_rejected(client):
     client.post("/auth/register", json={"full_name": "A", "email": "x@example.com", "password": "correctpass"})

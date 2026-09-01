@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from datetime import datetime
 
 class UserRegister(BaseModel):
     full_name: str
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8)
     country: str | None = None
     country_code: str | None = None
     phone_number: str | None = None
