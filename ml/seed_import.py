@@ -7,22 +7,40 @@ Run from the ml/ folder: python seed_import.py
 Requires: requests  (pip install requests)
 """
 import getpass
+import os
 import sys
+from collections import defaultdict
 
 import pandas as pd
 import requests
 
-API_BASE = "http://127.0.0.1:8000"
+# Override without editing this file: $env:API_BASE="https://your-render-url.onrender.com" (PowerShell)
+API_BASE = os.environ.get("API_BASE", "http://127.0.0.1:8000")
 
-IMAGE_MAP = {
-    "Sedan": "/images/sedan.jpg",
-    "Hatchback": "/images/hatchback.jpg",
-    "Economy": "/images/economy.jpg",
-    "SUV": "/images/suv.jpg",
-    "Luxury": "/images/luxury.jpg",
-    "Hybrid": "/images/hybrid.jpg",
-    "Pickup": "/images/pickup.jpg",
+# Multiple photos per category, round-robin assigned, so vehicles sharing a
+# category no longer all get the exact same image. Sedan/Hatchback/Economy get
+# 2 distinct photos each (the highest-volume categories); the rest stay at 1.
+# The first filename in each list is the photo that already exists in
+# frontend/public/images/ today - only the "-2" files need to be newly sourced.
+IMAGE_VARIANTS = {
+    "Sedan": ["sedan.jpg", "sedan-2.jpg"],
+    "Hatchback": ["hatchback.jpg", "hatchback-2.jpg"],
+    "Economy": ["economy.jpg", "economy-2.jpg"],
+    "SUV": ["suv.jpg"],
+    "Luxury": ["luxury.jpg"],
+    "Hybrid": ["hybrid.jpg"],
+    "Pickup": ["pickup.jpg"],
 }
+
+_category_counters = defaultdict(int)
+
+
+def next_image(category: str) -> str:
+    """Round-robins through that category's photo pool, wrapping around."""
+    variants = IMAGE_VARIANTS.get(category, IMAGE_VARIANTS["Sedan"])
+    idx = _category_counters[category] % len(variants)
+    _category_counters[category] += 1
+    return f"/images/{variants[idx]}"
 
 
 def login(email, password):
@@ -49,7 +67,7 @@ def main():
 
     for _, row in df.iterrows():
         payload = row.to_dict()
-        payload["images"] = [IMAGE_MAP.get(row["category"], "/images/sedan.jpg")]
+        payload["images"] = [next_image(row["category"])]
 
         try:
             res = requests.post(f"{API_BASE}/vehicles", json=payload, headers=headers)
