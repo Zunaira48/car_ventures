@@ -86,7 +86,7 @@ describe("Vehicles filter bar", () => {
     await user.type(screen.getByLabelText(/location/i), "Karachi");
     expect(screen.getByRole("button", { name: /clear/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Search" }));
+    await user.click(screen.getByRole("button", { name: /clear/i }));
 
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
     expect(api.get.mock.calls[1][0]).toBe("/vehicles?page_size=100");
