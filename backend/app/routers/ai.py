@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
-from app.schemas.ai import PricePredictionRequest, PricePredictionResponse
+from fastapi import APIRouter, HTTPException, Request, status
+from app.schemas.ai import PricePredictionRequest, PricePredictionResponse, SearchParseRequest, SearchParseResponse
 from app.ml.predictor import predict_price, MODEL
+from app.services.gemini import parse_search_query
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -26,3 +28,16 @@ def predict_price_endpoint(payload: PricePredictionRequest):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Could not generate a price estimate for these vehicle details. You can still list the vehicle without one.",
         )
+
+
+@router.post("/parse-search", response_model=SearchParseResponse)
+@limiter.limit("10/minute")
+def parse_search_endpoint(request: Request, payload: SearchParseRequest):
+    try:
+        result = parse_search_query(payload.query)
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Natural-language search is temporarily unavailable. Please use the filters directly.",
+        )
+    return SearchParseResponse(**result)

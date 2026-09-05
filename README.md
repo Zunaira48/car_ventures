@@ -130,6 +130,7 @@ Frontend runs at `http://localhost:5173`.
 | `CORS_ORIGINS` | Comma-separated list of allowed frontend origins |
 | `JWT_SECRET` | JWT signing secret |
 | `ADMIN_EMAIL` | Email address that gets `admin` role automatically on registration |
+| `GEMINI_MODEL` | *Optional.* Defaults to `gemini-3.5-flash-lite`. |
 
 **Frontend (`frontend/.env`)**
 
@@ -196,3 +197,8 @@ car_ventures/
 ## License
 
 This project is licensed under the MIT License — see [LICENSE](./LICENSE) for details.
+
+
+
+
+

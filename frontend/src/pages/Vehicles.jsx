@@ -60,6 +60,30 @@ export default function Vehicles() {
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
+  const [nlQuery, setNlQuery] = useState("");
+  const [nlLoading, setNlLoading] = useState(false);
+  const [nlError, setNlError] = useState("");
+
+  const handleNlSearch = async (e) => {
+    e.preventDefault();
+    if (!nlQuery.trim()) return;
+    setNlLoading(true);
+    setNlError("");
+    try {
+      const res = await api.post("/ai/parse-search", { query: nlQuery });
+      const merged = { ...filters };
+      for (const [key, value] of Object.entries(res.data)) {
+        if (value !== null && value !== undefined) merged[key] = String(value);
+      }
+      setFilters(merged);
+      loadVehicles(merged);
+    } catch {
+      setNlError("Could not understand that search right now — try the filters below instead.");
+    } finally {
+      setNlLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -100,6 +124,21 @@ export default function Vehicles() {
         <h2>Available Vehicles</h2>
         {!loading && <span className="muted">{vehicles.length} result{vehicles.length !== 1 ? "s" : ""}</span>}
       </div>
+
+      <form onSubmit={handleNlSearch} className="nl-search">
+        <label htmlFor="nl-search-input" className="sr-only">Describe what you're looking for</label>
+        <input
+          id="nl-search-input"
+          type="text"
+          placeholder='Try "automatic sedan in Lahore under 5000/day"'
+          value={nlQuery}
+          onChange={(e) => setNlQuery(e.target.value)}
+        />
+        <button type="submit" className="btn-primary btn-sm" disabled={nlLoading}>
+          {nlLoading ? "Thinking..." : "AI Search"}
+        </button>
+      </form>
+      {nlError && <p className="alert-error" style={{ marginBottom: 16 }}>{nlError}</p>}
 
       <form onSubmit={handleSearch} className="filter-bar">
         <label>

@@ -7,7 +7,7 @@ import api from "../api/client";
 import { useAuth } from "../context/useAuth";
 
 vi.mock("../api/client", () => ({
-  default: { get: vi.fn() },
+  default: { get: vi.fn(), post: vi.fn() },
 }));
 
 vi.mock("../context/useAuth");
@@ -34,6 +34,7 @@ const VEHICLE = {
 describe("Vehicles filter bar", () => {
   beforeEach(() => {
     api.get.mockReset();
+    api.post.mockReset();
     useAuth.mockReturnValue({ isAuthenticated: false });
   });
 
@@ -65,7 +66,7 @@ describe("Vehicles filter bar", () => {
     await user.type(screen.getByLabelText(/location/i), "Lahore");
     await user.selectOptions(screen.getByLabelText(/category/i), "Sedan");
     await user.type(screen.getByLabelText(/min pkr/i), "2000");
-    await user.click(screen.getByRole("button", { name: /search/i }));
+    await user.click(screen.getByRole("button", { name: "Search" }));
 
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
     const secondCallUrl = api.get.mock.calls[1][0];
@@ -85,7 +86,7 @@ describe("Vehicles filter bar", () => {
     await user.type(screen.getByLabelText(/location/i), "Karachi");
     expect(screen.getByRole("button", { name: /clear/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /clear/i }));
+    await user.click(screen.getByRole("button", { name: "Search" }));
 
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
     expect(api.get.mock.calls[1][0]).toBe("/vehicles?page_size=100");
@@ -100,8 +101,46 @@ describe("Vehicles filter bar", () => {
     expect(await screen.findByText("No vehicles available yet.")).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/location/i), "Nowhere");
-    await user.click(screen.getByRole("button", { name: /search/i }));
+    await user.click(screen.getByRole("button", { name: "Search" }));
 
     expect(await screen.findByText("No vehicles match those filters.")).toBeInTheDocument();
+  });
+
+  it("AI Search parses the query, fills the manual filters, and reloads vehicles", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    api.post.mockResolvedValue({
+      data: { location: "Lahore", category: "Sedan", transmission: null, fuel_type: null, min_price: null, max_price: 5000 },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
+    await user.type(screen.getByPlaceholderText(/automatic sedan/i), "sedan in Lahore under 5000");
+    await user.click(screen.getByRole("button", { name: /ai search/i }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith("/ai/parse-search", { query: "sedan in Lahore under 5000" });
+    });
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    const secondCallUrl = api.get.mock.calls[1][0];
+    expect(secondCallUrl).toContain("location=Lahore");
+    expect(secondCallUrl).toContain("category=Sedan");
+    expect(secondCallUrl).toContain("max_price=5000");
+    expect(screen.getByLabelText(/location/i)).toHaveValue("Lahore");
+  });
+
+  it("AI Search shows a fallback error and does not touch the manual filters when the AI service fails", async () => {
+    api.get.mockResolvedValue({ data: [] });
+    api.post.mockRejectedValue(new Error("service unavailable"));
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
+    await user.type(screen.getByPlaceholderText(/automatic sedan/i), "cheap hatchback");
+    await user.click(screen.getByRole("button", { name: /ai search/i }));
+
+    expect(await screen.findByText(/could not understand that search/i)).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText(/location/i)).toHaveValue("");
   });
 });
