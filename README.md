@@ -8,6 +8,7 @@
 ![Vite](https://img.shields.io/badge/Vite-React_Router_v7-646CFF?logo=vite&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Live](https://img.shields.io/badge/demo-live-brightgreen)
+![CI](https://github.com/Zunaira48/car_ventures/actions/workflows/ci.yml/badge.svg)
 
 **🔗 Live Demo:** [car-ventures.vercel.app](https://car-ventures.vercel.app)
 
@@ -189,12 +190,13 @@ car_ventures/
 - [x] Enum-validated status transitions (bookings, tour bookings, vehicle moderation)
 - [x] Mobile/tablet responsive design
 - [x] Backend (75 tests) + frontend (21 tests) automated test coverage
+## License- [x] Backend (93 tests) + frontend (28 tests) automated test coverage
 - [x] Deployment (frontend + backend + database, entirely on free tiers)
+- [x] CI/CD via GitHub Actions (backend tests, frontend lint/tests/build on every push)
+- [x] Security review pass
+- [x] Vehicle stock photo variety
+- [x] AI-powered natural-language search (Gemini)
 - [ ] Broader frontend test coverage (remaining pages)
-- [ ] Security review pass
-- [ ] Vehicle stock photo variety (currently some listings reuse the same placeholder image)
-
-## License
 
 This project is licensed under the MIT License — see [LICENSE](./LICENSE) for details.
 
