@@ -7,6 +7,7 @@ export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
 
   const loadBookings = () => {
@@ -22,13 +23,14 @@ export default function MyBookings() {
 
   const handleCancel = async (bookingId) => {
     setCancellingId(bookingId);
+    setActionError("");
     try {
       await api.patch(`/bookings/${bookingId}/cancel`);
       setBookings((prev) =>
         prev.map((b) => (b.id === bookingId ? { ...b, status: "CANCELLED" } : b))
       );
     } catch {
-      setError("Could not cancel that booking. Please try again.");
+      setActionError("Could not cancel that booking. Please try again.");
     } finally {
       setCancellingId(null);
     }
@@ -40,6 +42,7 @@ export default function MyBookings() {
 
       {loading && <SkeletonTicketList count={3} />}
       {error && <p className="alert-error">{error}</p>}
+      {actionError && <p className="alert-error">{actionError}</p>}
 
       {!loading && !error && bookings.length === 0 && (
         <p className="muted">
