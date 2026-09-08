@@ -51,3 +51,25 @@ def test_parse_search_is_rate_limited_after_10_attempts_per_minute(client, monke
         assert res.status_code == 200
     res = client.post("/ai/parse-search", json={"query": "sedan"})
     assert res.status_code == 429
+
+def test_predict_price_failure_is_logged_server_side(client, monkeypatch, caplog):
+    from app.routers import ai as ai_router
+
+    monkeypatch.setattr(ai_router, "MODEL", object())  # non-None, so the "unavailable" short-circuit is skipped
+
+    def _boom(features):
+        raise ValueError("model expects a different feature shape")
+
+    monkeypatch.setattr(ai_router, "predict_price", _boom)
+
+    payload = {
+        "make": "Toyota", "model": "Corolla", "year": 2019, "category": "Sedan",
+        "body_type": "Sedan", "transmission": "Automatic", "fuel_type": "Petrol",
+        "engine": "1.8L", "mileage": 40000, "seats": 5, "location": "Lahore",
+    }
+
+    with caplog.at_level("ERROR", logger="app.routers.ai"):
+        res = client.post("/ai/predict-price", json=payload)
+
+    assert res.status_code == 503
+    assert "model expects a different feature shape" in caplog.text

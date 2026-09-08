@@ -1,13 +1,20 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from app.logging_config import configure_logging
+
+configure_logging()
+
 from app.config import settings
 from app.database import engine
 from app.rate_limit import limiter
 from app.routers import auth, vehicles, bookings, admin, favorites, reviews, tours, tour_bookings, notifications, ai
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Vehicle Platform API")
 app.state.limiter = limiter
@@ -42,5 +49,6 @@ def health_db():
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return {"status": "ok", "database": "connected"}
-    except Exception:
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
         return {"status": "error", "database": "unavailable"}

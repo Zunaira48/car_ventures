@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     jwt_secret: str
     admin_email: str = ""
+    log_level: str = "INFO"
     gemini_api_key: str = ""
     # Google periodically retires free-tier model names (gemini-2.0-flash-lite was
     # shut down June 1, 2026) - if AI Search starts returning 503s with a 404 in the

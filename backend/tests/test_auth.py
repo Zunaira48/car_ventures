@@ -70,6 +70,13 @@ def test_login_unknown_email_rejected(client):
     res = client.post("/auth/login", json={"email": "nobody@example.com", "password": "whatever123"})
     assert res.status_code == 401
 
+def test_failed_login_is_logged_without_leaking_the_password(client, caplog):
+    with caplog.at_level("WARNING", logger="app.routers.auth"):
+        client.post("/auth/login", json={"email": "someone@example.com", "password": "super-secret-pw"})
+
+    assert "someone@example.com" in caplog.text
+    assert "super-secret-pw" not in caplog.text
+
 
 def test_me_requires_auth(client):
     res = client.get("/auth/me")
